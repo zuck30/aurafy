@@ -1,18 +1,53 @@
 # Aura-fy Your Playlist 🎵✨
 
-Aurafy is a web application that analyzes your music listening habits and assigns humorous "auras" based on the audio features of your recently played tracks or playlists.
+<div align="center">
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=30&duration=4000&pause=1000&color=43CEA2&center=true&vCenter=true&width=500&height=70&lines=Discover+Your+Musical+Aura;Analyze+Your+Playlists;Get+Humorous+Insights;Powered+by+Spotify+API" alt="Typing Animation" />
+</div>
+
+
+![Aura-fy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aura-fy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
+
+<p align="center">Aurafy is web application that analyzes your music listening habits and assigns humorous "auras" based on audio features. Discover if you're a "Pogo-Sticking Toddler" or a "Contemplative Emo Poet"!</p>
 
 ![Aura-fy Your Playlist](https://img.shields.io/badge/React-18.2.0-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green) ![Spotify API](https://img.shields.io/badge/Spotify-API-brightgreen)
 
-## 🌟 Features
 
-- **Spotify Integration**: Connect your Spotify account to analyze your music
-- **Humorous Auras**: Get funny, non-scientific mood classifications like "The Pogo-Sticking Toddler" or "The Contemplative Emo Poet"
-- **Audio Feature Analysis**: Visual breakdown of danceability, energy, positivity, and acousticness
-- **Responsive Design**: Works perfectly on mobile devices and laptops
-- **Extreme Track Identification**: Discover your most and least danceable/energetic songs
+<h3>Quick Links</h3>
 
-## 🚀 Quick Start
+<div align="left">
+    <a href="mailto:mwalyangashadrack@gmail.com"><img src="https://img.shields.io/badge/Contact%20Me-30302f?style=flat-square&logo=gmail" alt=""></a>
+    <a href="https://github.com/zuck30/aura-fy"><img src="https://img.shields.io/badge/Repository-30302f?style=flat-square&logo=github" alt=""></a>
+</div>
+
+<br>
+<a href="https://github.com/zuck30/aura-fy"> <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2J0d2F6a3J5b3V5dW5pZ2F3c2V3eW5tN2V4dGJ6cGx4dXl2eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R1tvI9svkIWwpVYr/giphy.gif" width="40%" align="right" style="border-radius:10px; animation: float 6s ease-in-out infinite;" alt="Coding GIF">
+</a>
+
+<ul>
+    <li>🔭 Currently analyzing musical patterns with <a href="https://developer.spotify.com/documentation/web-api">Spotify API</a></li>
+    <li>👨‍💻 Built with React, FastAPI, and Python</li>
+    <li>🎵 Transforms audio features into humorous personality insights</li>
+</ul>
+
+<h2 id=lang>Tech Stack</h2>
+
+**Frontend**
+
+![My Skills](https://skillicons.dev/icons?i=react,js,html,css,tailwind&perline=10)
+
+**Backend**
+
+![My Skills](https://skillicons.dev/icons?i=python,fastapi&perline=10)
+
+**Tools & Platforms**
+
+![My Skills](https://skillicons.dev/icons?i=github,vscode,netlify,heroku&perline=10)
+
+**API**
+
+![Spotify API](https://img.shields.io/badge/Spotify-API-brightgreen?style=for-the-badge&logo=spotify)
+
+<h2>🚀 Quick Start</h2>
 
 ### Prerequisites
 
@@ -24,7 +59,7 @@ Aurafy is a web application that analyzes your music listening habits and assign
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/zuck/aura-fy.git
+   git clone https://github.com/zuck30/aura-fy.git
    cd aura-fy
    ```
 
@@ -61,20 +96,7 @@ Aurafy is a web application that analyzes your music listening habits and assign
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🎯 How It Works
-
-1. **Authentication**: Users log in with their Spotify account using OAuth 2.0
-2. **Data Retrieval**: The app fetches recently played tracks or specific playlists
-3. **Audio Analysis**: The backend analyzes audio features from Spotify:
-   - Danceability
-   - Energy
-   - Valence (positivity)
-   - Acousticness
-   - Tempo
-4. **Aura Assignment**: A custom algorithm maps these features to humorous auras
-5. **Visualization**: Results are displayed with color-coded backgrounds and feature breakdowns
-
-## 🎨 Example Auras
+<h2>🎨 Example Auras</h2>
 
 - **The Pogo-Sticking Toddler**: High energy + high danceability
 - **The Contemplative Emo Poet**: Low valence + high acousticness  
@@ -83,24 +105,7 @@ Aurafy is a web application that analyzes your music listening habits and assign
 - **The Moody Vampire**: Dark and atmospheric
 - **The Chill Beach Bum**: Acoustic, positive, and relaxed
 
-## 🛠️ Technology Stack
-
-### Frontend
-- React 18
-- React Router DOM
-- CSS3 with Flexbox/Grid
-- Responsive design principles
-
-### Backend
-- FastAPI
-- Python 3.8+
-- Spotify Web API
-- Uvicorn server
-
-### APIs
-- Spotify Web API for music data and authentication
-
-## 📱 Responsive Design
+<h2>📱 Responsive Design</h2>
 
 The application is optimized for all device sizes:
 - Mobile phones (320px and up)
@@ -108,55 +113,23 @@ The application is optimized for all device sizes:
 - Laptops (1024px and up)
 - Large screens (1200px and up)
 
-## 🔧 Configuration
+<h2>🖼 Profile Links</h2>
+<p>
+    <a href="https://github.com/zuck30"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="" srcset=""></a>
+    <a href="mailto:mwalyangashadrack@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="" srcset=""></a>
+</p>
 
-### Environment Variables
+<h2>☕️ Support the Project</h2>
+<p>
+    <a href="https://www.buymeacoffee.com/zuck30" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" height="30px" ></a>
+</p>
 
-For production deployment, set these environment variables:
-
-```
-SPOTIFY_CLIENT_ID=your_spotify_client_id
-SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
-SPOTIFY_REDIRECT_URI=your_redirect_uri
-```
-
-### Customizing Auras
-
-Edit the `AURAS` list in `backend/main.py` to add your own humorous aura definitions:
-
-```python
-{
-    "name": "Your Custom Aura",
-    "description": "Funny description of what this aura means",
-    "conditions": lambda f: f["feature1"] > threshold and f["feature2"] < threshold,
-    "color": "#HEXCODE"
-}
-```
-
-## 📦 Deployment
-
-### Backend Deployment (Example: Heroku)
-
-1. Create a `Procfile` in the backend directory:
-   ```
-   web: uvicorn main:app --host=0.0.0.0 --port=${PORT:-8000}
-   ```
-
-2. Deploy to Heroku:
-   ```bash
-   heroku create aurafy
-   git subtree push --prefix backend heroku main
-   ```
-
-### Frontend Deployment (Example: Netlify)
-
-1. Build the project:
-   ```bash
-   cd frontend
-   npm run build
-   ```
-
-2. Deploy the `build` folder to Netlify or similar service
+<div align="center">
+<blockquote>
+<p><em>"Music is the shorthand of emotion."</em></p>
+<p><strong>— Leo Tolstoy</strong></p>
+</blockquote>
+</div>
 
 ## 🤝 Contributing
 
@@ -170,7 +143,7 @@ We welcome contributions! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License, see the [LICENSE.md](LICENSE.md) file for details.
 
 ## 🙏 Acknowledgments
 
@@ -187,3 +160,5 @@ If you have any questions or issues, please open an issue on GitHub or contact u
 We hope you have fun discovering your musical aura! Share your results with friends and compare your musical personalities.
 
 ---
+
+**Note**: This app is designed for entertainment purposes only. The "auras" are not scientifically validated assessments of personality or mood.
