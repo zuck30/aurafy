@@ -3,82 +3,311 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  background: linear-gradient(135deg, #1db954 0%, #191414 100%);
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1db954 0%, #1ed760 25%, #191414 75%, #000000 100%);
   font-family: 'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  position: relative;
+  padding: 2rem;
+  overflow-x: hidden;
+}
+
+.background-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(circle at 20% 20%, rgba(29, 185, 84, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(30, 215, 96, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+  animation: float 20s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
 }
 
 .login-card {
-  background-color: rgba(18, 18, 18, 0.95);
-  padding: 3rem;
-  border-radius: 12px;
+  background: rgba(18, 18, 18, 0.95);
+  padding: 3rem 2.5rem;
+  border-radius: 24px;
   text-align: center;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(10px);
-  width: 90%;
-  max-width: 400px;
-  border: 1px solid #282828;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.login-card h1 {
+.login-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(29, 185, 84, 0.8), transparent);
+}
+
+/* Logo Section */
+.logo-section {
+  margin-bottom: 2.5rem;
+}
+
+.logo-placeholder {
+  margin-bottom: 1.5rem;
+}
+
+.logo-icon {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #1db954, #1ed760);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 25px rgba(29, 185, 84, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.logo-icon:hover {
+  transform: scale(1.05);
+}
+
+.music-note {
+  font-size: 2.5rem;
+  color: white;
+  font-weight: bold;
+  z-index: 2;
+  position: relative;
+}
+
+.aura-glow {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  background: linear-gradient(45deg, #1db954, #1ed760, #1db954);
+  border-radius: 25px;
+  opacity: 0.3;
+  animation: pulse 3s ease-in-out infinite;
+  z-index: 1;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+.app-title {
+  margin: 0;
+  color: #ffffff;
+  font-size: 2.8rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #1db954, #1ed760);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Content Section */
+.content-section {
+  margin-bottom: 3rem;
+}
+
+.welcome-text {
   margin-bottom: 1rem;
   color: #ffffff;
-  font-size: 2.5rem;
-  font-weight: 900;
-  letter-spacing: -0.5px;
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
-.login-card p {
-  margin-bottom: 2.5rem;
+.description {
+  margin-bottom: 0.8rem;
   color: #b3b3b3;
   font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.highlight {
+  color: #1ed760;
+  font-weight: 600;
+  background: linear-gradient(135deg, #1db954, #1ed760);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sub-description {
+  margin: 0;
+  color: #888888;
+  font-size: 0.95rem;
   line-height: 1.5;
 }
 
+/* Login Section */
+.login-section {
+  margin-bottom: 2rem;
+}
+
 .spotify-login-btn {
-  background-color: #1db954;
+  background: #1db954;
   color: white;
   border: none;
-  padding: 1.2rem 2.5rem;
+  padding: 1.2rem 2rem;
   border-radius: 50px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
   width: 100%;
   letter-spacing: 0.5px;
-  text-transform: uppercase;
   font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 15px rgba(29, 185, 84, 0.3);
 }
 
 .spotify-login-btn:hover {
-  background-color: #1ed760;
-  transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(29, 185, 84, 0.4);
+  background: #1ed760;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(29, 185, 84, 0.4);
 }
 
 .spotify-login-btn:active {
-  transform: scale(0.98);
+  transform: translateY(0);
 }
 
-/* Spotify logo style */
-.login-card::before {
-  content: '';
-  display: block;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, #1db954, #1ed760);
-  border-radius: 50%;
-  margin: 0 auto 1.5rem;
+.spotify-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spotify-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.divider {
   position: relative;
+  margin: 1.5rem 0;
+  color: #666666;
+  font-size: 0.9rem;
 }
 
-.login-card::after {
-  content: '♪';
+.divider::before {
+  content: '';
   position: absolute;
-  color: white;
-  font-size: 2rem;
-  top: calc(50% - 100px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  z-index: 1;
+}
+
+.divider span {
+  background: rgba(18, 18, 18, 0.95);
+  padding: 0 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.demo-btn {
+  background: transparent;
+  color: #b3b3b3;
+  border: 2px solid #333333;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  font-family: inherit;
+}
+
+.demo-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: #555555;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Footer Section */
+.footer-section {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+}
+
+.footer-text {
+  margin: 0;
+  color: #888888;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.link {
+  color: #1db954;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.link:hover {
+  color: #1ed760;
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 1rem;
+  }
+  
+  .login-card {
+    padding: 2rem 1.5rem;
+  }
+  
+  .app-title {
+    font-size: 2.2rem;
+  }
+  
+  .logo-icon {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .music-note {
+    font-size: 2rem;
+  }
+}
+
+/* Logo Image Styles (when you replace the placeholder) */
+.logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  object-fit: contain;
+  margin: 0 auto 1rem;
+  display: block;
+  box-shadow: 0 8px 25px rgba(29, 185, 84, 0.3);
+  transition: transform 0.3s ease;
+}
+
+.logo:hover {
+  transform: scale(1.05);
 }
