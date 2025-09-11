@@ -1,6 +1,6 @@
-# Contributing to Aura-fy 🎵✨
+# Contributing to Aurafy 🎵✨
 
-Thank you for your interest in contributing to **Aura-fy**! We welcome contributions from the community to help improve this Spotify-powered web application that analyzes music listening habits and assigns humorous "auras." Whether you're fixing bugs, adding features, or improving documentation, your contributions are greatly appreciated.
+Thank you for your interest in contributing to **Aurafy**! We welcome contributions from the community to help improve this Spotify-powered web application that analyzes music listening habits and assigns humorous "auras." Whether you're fixing bugs, adding features, or improving documentation, your contributions are greatly appreciated.
 
 ## 📋 How to Contribute
 
