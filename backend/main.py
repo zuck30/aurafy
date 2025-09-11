@@ -5,7 +5,7 @@ import requests
 from typing import List, Dict, Optional
 import random
 
-app = FastAPI(title="Aura-fy Your Playlist API")
+app = FastAPI(title="Aurafy Your Playlist API")
 
 # CORS middleware to allow frontend connection
 app.add_middleware(
