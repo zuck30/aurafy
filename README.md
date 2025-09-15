@@ -1,15 +1,15 @@
-# Aura-fy Your Playlist 🎵✨
+# Aurafy.
 
 <div align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=30&duration=4000&pause=1000&color=43CEA2&center=true&vCenter=true&width=500&height=70&lines=Discover+Your+Musical+Aura;Analyze+Your+Playlists;Get+Humorous+Insights;Powered+by+Spotify+API" alt="Typing Animation" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=30&duration=4000&pause=1000&color=3cec5&center=true&vCenter=true&width=500&height=70&lines=Discover+Your+Musical+Aura;Analyze+Your+Playlists;Get+Humorous+Insights;Powered+by+Spotify+API" alt="Typing Animation" />
 </div>
 
 
-![Aura-fy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aura-fy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
+![Aurafy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aura-fy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
 
 <p align="center">Aurafy is web application that analyzes your music listening habits and assigns humorous "auras" based on audio features. Discover if you're a "Pogo-Sticking Toddler" or a "Contemplative Emo Poet"!</p>
 
-![Aura-fy Your Playlist](https://img.shields.io/badge/React-18.2.0-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green) ![Spotify API](https://img.shields.io/badge/Spotify-API-brightgreen)
+![Aurafy your playlist](https://img.shields.io/badge/React-18.2.0-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green) ![Spotify API](https://img.shields.io/badge/Spotify-API-brightgreen)
 
 
 <h3>Quick Links</h3>
@@ -113,13 +113,13 @@ The application is optimized for all device sizes:
 - Laptops (1024px and up)
 - Large screens (1200px and up)
 
-<h2>🖼 Profile Links</h2>
+<h2>Profile Links</h2>
 <p>
     <a href="https://github.com/zuck30"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="" srcset=""></a>
     <a href="mailto:mwalyangashadrack@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="" srcset=""></a>
 </p>
 
-<h2>☕️ Support the Project</h2>
+<h2> Support the Project</h2>
 <p>
     <a href="https://www.buymeacoffee.com/zuck30" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" height="30px" ></a>
 </p>
@@ -131,7 +131,7 @@ The application is optimized for all device sizes:
 </blockquote>
 </div>
 
-## 🤝 Contributing
+## Contributing
 
 We welcome contributions! Please feel free to submit a Pull Request.
 
@@ -141,21 +141,21 @@ We welcome contributions! Please feel free to submit a Pull Request.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License, see the [LICENSE.md](LICENSE.md) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - Spotify for their comprehensive API
 - FastAPI for the excellent web framework
 - React team for the frontend library
 
-## 📞 Support
+## Support
 
 If you have any questions or issues, please open an issue on GitHub or contact us at mwalyangashadrack@gmail.com
 
-## 🎉 Enjoy!
+## Enjoy!
 
 We hope you have fun discovering your musical aura! Share your results with friends and compare your musical personalities.
 
