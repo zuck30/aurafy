@@ -5,7 +5,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import PlaylistAnalysis from './components/PlaylistAnalysis';
 import RecentAnalysis from './components/RecentAnalysis';
-import Navbar from './components/Navbar';
+
 import './App.css';
 
 function App() {
@@ -32,7 +32,7 @@ function App() {
   return (
     <Router>
       <div className="App">
-        {token ? <Navbar token={token} setToken={setToken} /> : null}
+
         <Routes>
           <Route 
             path="/" 
