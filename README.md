@@ -59,8 +59,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/zuck30/aura-fy.git
-   cd aura-fy
+   git clone https://github.com/zuck30/aurafy.git
+   cd aurafy
    ```
 
 2. **Set up the backend**
