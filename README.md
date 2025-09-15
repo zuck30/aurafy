@@ -20,7 +20,7 @@
 </div>
 
 <br>
-<a href="https://github.com/zuck30/aura-fy"> <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExb2J0d2F6a3J5b3V5dW5pZ2F3c2V3eW5tN2V4dGJ6cGx4dXl2eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/L1R1tvI9svkIWwpVYr/giphy.gif" width="40%" align="right" style="border-radius:10px; animation: float 6s ease-in-out infinite;" alt="Coding GIF">
+<a href="https://github.com/zuck30/aura-fy"> <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmU3dzFubm5zN3U4ZWtsaXN5cG1sZGd6ZXhqeW1yMDh1MnkzYjlseSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/EFGXDUBXcUd131C0CR/giphy.gif" width="40%" align="right" style="border-radius:10px; animation: float 6s ease-in-out infinite;" alt="Coding GIF">
 </a>
 
 <ul>
