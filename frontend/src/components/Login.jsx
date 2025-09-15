@@ -1,10 +1,19 @@
-
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Login.css';
 import aurafyLogo from './aurafy.png'; 
 
 const Login = () => {
-  const handleLogin = () => {
+  const navigate = useNavigate();
+
+  const handleDemoLogin = () => {
+    // For frontend development - bypass Spotify auth
+    localStorage.setItem("token", "demo_token");
+    navigate("/dashboard");
+  };
+
+  const handleRealLogin = () => {
+    // Real Spotify login - for production use
     window.location.href = 'http://localhost:8000/api/login';
   };
 
@@ -33,7 +42,6 @@ const Login = () => {
         </div>
 
         <div className="content-section">
-
           <p className="description">
             Discover the <span className="highlight">hilarious mood</span> of your Spotify music
           </p>
@@ -43,7 +51,7 @@ const Login = () => {
         </div>
 
         <div className="login-section">
-          <button className="spotify-login-btn" onClick={handleLogin}>
+          <button className="spotify-login-btn demo-mode" onClick={handleDemoLogin}>
             <div className="spotify-icon">
               <svg viewBox="0 0 24 24" width="24" height="24">
                 <path
@@ -52,17 +60,23 @@ const Login = () => {
                 />
               </svg>
             </div>
-            Continue with Spotify
+            Try Demo Mode
           </button>
 
-          {/* <div className="divider">
+          <div className="divider">
             <span>or</span>
           </div>
 
-          <button className="demo-btn">Try Demo Playlist</button> */}
+          <button className="demo-btn" onClick={handleRealLogin}>
+            Spotify Login (Backend Required)
+          </button>
         </div>
 
         <div className="footer-section">
+          <p className="footer-text">
+            <span className="demo-notice">DEMO MODE: </span>
+            Currently using mock data for frontend development
+          </p>
           <p className="footer-text">
             By continuing, you agree to our{' '}
             <a href="#" className="link">
@@ -82,9 +96,11 @@ const Login = () => {
 export default Login;
 
 
+
+
 // import React from 'react';
 // import './Login.css';
-// import aurafyLogo from './aurafy.png'; // Import the image from the same folder
+// import aurafyLogo from './aurafy.png'; 
 
 // const Login = () => {
 //   const handleLogin = () => {
@@ -93,6 +109,13 @@ export default Login;
 
 //   return (
 //     <div className="login-container">
+//       <iframe
+//         src="https://www.youtube.com/embed/V9PVRfjEBTI?autoplay=1&mute=1&loop=1&playlist=V9PVRfjEBTI&controls=0"
+//         frameBorder="0"
+//         allow="autoplay; encrypted-media"
+//         className="background-video"
+//         title="Birds of a Feather Background"
+//       ></iframe>
 //       <div className="background-pattern">
 //         <div className="musical-note note-1"></div>
 //         <div className="musical-note note-2"></div>
@@ -109,7 +132,7 @@ export default Login;
 //         </div>
 
 //         <div className="content-section">
-//           <h2 className="welcome-text">Welcome to Aurafy</h2>
+
 //           <p className="description">
 //             Discover the <span className="highlight">hilarious mood</span> of your Spotify music
 //           </p>
@@ -131,11 +154,11 @@ export default Login;
 //             Continue with Spotify
 //           </button>
 
-//           <div className="divider">
+//           {/* <div className="divider">
 //             <span>or</span>
 //           </div>
 
-//           <button className="demo-btn">Try Demo Playlist</button>
+//           <button className="demo-btn">Try Demo Playlist</button> */}
 //         </div>
 
 //         <div className="footer-section">
