@@ -5,7 +5,7 @@
 </div>
 
 
-![Aurafy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aura-fy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
+![Aurafy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aurafy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
 
 <p align="center">Aurafy is web application that analyzes your music listening habits and assigns humorous "auras" based on audio features. Discover if you're a "Pogo-Sticking Toddler" or a "Contemplative Emo Poet"!</p>
 
