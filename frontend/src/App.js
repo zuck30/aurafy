@@ -100,7 +100,7 @@ const ProtectedRoute = ({ children }) => {
 };
 
 // 4. App Component with updated routing
-function App() {
+function AppContent() {
   const { isLoggedIn, loading } = useAuth();
 
   return (
@@ -140,14 +140,17 @@ function App() {
 }
 
 // We need to wrap App with the Router and AuthProvider
-const AppWrapper = () => (
+const App = () => (
   <Router>
     <AuthProvider>
       <Box>
-        <App />
+        <AppContent />
       </Box>
     </AuthProvider>
   </Router>
 );
 
-export default AppWrapper;
+export default App;
+
+
+
