@@ -17,8 +17,8 @@ app.add_middleware(
 )
 
 # Spotify API credentials (should be in environment variables in production)
-SPOTIFY_CLIENT_ID = "your_spotify_client_id"
-SPOTIFY_CLIENT_SECRET = "your_spotify_client_secret"
+SPOTIFY_CLIENT_ID = "85a4b164d555499a84c0d16725bad0fa"
+SPOTIFY_CLIENT_SECRET = "449877bbefaa407cae497994af27658b"
 SPOTIFY_REDIRECT_URI = "http://localhost:3000/callback"
 
 # Mock data for development (remove when connecting to real Spotify API)
