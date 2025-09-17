@@ -176,9 +176,8 @@ const TrackItem = ({ item }) => (
 );
 
 const Dashboard = () => {
-  const { token, user } = useAuth();
+  const { token, user, recentTracks, setRecentTracks } = useAuth();
   const [playlists, setPlaylists] = useState([]);
-  const [recentTracks, setRecentTracks] = useState([]);
   const [loading, setLoading] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
 
