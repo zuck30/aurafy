@@ -162,7 +162,10 @@ async def get_playlist(playlist_id: str, access_token: str):
 
 async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
     playlist_data = await get_playlist(playlist_id, access_token)
-    track_ids = [item['track']['id'] for item in playlist_data['tracks']['items'] if item.get('track') and item['track'].get('id')]
+    track_ids = []
+    for item in playlist_data['tracks']['items']:
+        if item and item.get('track') and item.get('track').get('id'):
+            track_ids.append(item['track']['id'])
     return track_ids
 
 async def get_audio_features(track_ids: List[str], access_token: str):
@@ -238,7 +241,10 @@ async def analyze_playlist(playlist_id: str, access_token: str):
 @app.get("/api/analyze/recent")
 async def analyze_recent(access_token: str):
     recent_data = await get_recently_played(access_token)
-    track_ids = [item['track']['id'] for item in recent_data['items'] if item.get('track') and item['track'].get('id')]
+    track_ids = []
+    for item in recent_data['items']:
+        if item and item.get('track') and item.get('track').get('id'):
+            track_ids.append(item['track']['id'])
     unique_track_ids = list(dict.fromkeys(track_ids))
 
     audio_features = await get_audio_features(unique_track_ids, access_token)
