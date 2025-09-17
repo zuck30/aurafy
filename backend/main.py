@@ -164,7 +164,7 @@ async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
     playlist_data = await get_playlist(playlist_id, access_token)
     track_ids = []
     for item in playlist_data['tracks']['items']:
-        if item and item.get('track') and item.get('track').get('id'):
+        if item and item.get('track') and item.get('track').get('id') and item.get('track').get('type') == 'track':
             track_ids.append(item['track']['id'])
     return track_ids
 
@@ -243,7 +243,7 @@ async def analyze_recent(access_token: str):
     recent_data = await get_recently_played(access_token)
     track_ids = []
     for item in recent_data['items']:
-        if item and item.get('track') and item.get('track').get('id'):
+        if item and item.get('track') and item.get('track').get('id') and item.get('track').get('type') == 'track':
             track_ids.append(item['track']['id'])
     unique_track_ids = list(dict.fromkeys(track_ids))
 
