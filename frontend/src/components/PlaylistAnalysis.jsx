@@ -37,16 +37,20 @@ const PlaylistAnalysis = () => {
   const { token } = useAuth();
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
 useEffect(() => {
   const fetchAnalysis = async () => {
     if (!token) return;
     try {
       setLoading(true);
+      setError(null);
       const res = await analyzePlaylist(token, id);
       setAnalysis(res.data);
-    } catch (error) {
-      console.error("Failed to fetch playlist analysis", error);
+    } catch (err) {
+      console.error("Failed to fetch playlist analysis", err);
+      const errorMessage = err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'Could not load analysis data for this playlist.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -70,12 +74,12 @@ useEffect(() => {
     );
   }
 
-  if (!analysis) {
+  if (error || !analysis) {
     return (
       <Center h="100vh" bg={bgColor}>
         <VStack>
           <Heading>Analysis Failed</Heading>
-          <Text>Could not load analysis data for this playlist.</Text>
+          <Text color="red.400" mt={4}>{error}</Text>
           <Button as={RouterLink} to="/" leftIcon={<Icon as={FaArrowLeft} />} mt={8}>
             Back to Dashboard
           </Button>

@@ -35,16 +35,20 @@ const RecentAnalysis = () => {
   const { token } = useAuth();
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchAnalysis = async () => {
       if (!token) return;
       try {
         setLoading(true);
+        setError(null);
         const res = await analyzeRecent(token);
         setAnalysis(res.data);
-      } catch (error) {
-        console.error("Failed to fetch recent analysis", error);
+      } catch (err) {
+        console.error("Failed to fetch recent analysis", err);
+        const errorMessage = err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'Could not load analysis data for your recent tracks.';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -67,12 +71,12 @@ const RecentAnalysis = () => {
     );
   }
 
-  if (!analysis) {
+  if (error || !analysis) {
     return (
       <Center h="100vh" bg={bgColor}>
         <VStack>
           <Heading>Analysis Failed</Heading>
-          <Text>Could not load analysis data for your recent tracks.</Text>
+          <Text color="red.400" mt={4}>{error}</Text>
           <Button as={RouterLink} to="/" leftIcon={<Icon as={FaArrowLeft} />} mt={8}>
             Back to Dashboard
           </Button>
