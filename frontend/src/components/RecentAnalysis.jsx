@@ -48,7 +48,7 @@ const RecentAnalysis = () => {
       } catch (err) {
         console.error("Failed to fetch recent analysis", err);
         if (err.response?.status === 403) {
-          setError("Could not fetch recent tracks. This can happen if you have a 'Private Session' enabled in your Spotify client. Please disable it and try again.");
+          setError("Could not fetch recent tracks. This feature may be unavailable due to your Spotify account settings or region-specific restrictions that this app cannot override.");
         } else {
           const errorMessage = err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'Could not load analysis data for your recent tracks.';
           setError(errorMessage);
