@@ -74,7 +74,7 @@ async def root():
 
 @app.get("/api/login")
 async def login():
-    scope = "user-read-private user-read-email user-read-recently-played user-top-read playlist-read-private"
+    scope = "user-read-private user-read-email user-read-recently-played user-top-read playlist-read-private playlist-read-collaborative"
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
