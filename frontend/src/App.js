@@ -5,6 +5,7 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import PlaylistAnalysis from './components/PlaylistAnalysis';
 import RecentAnalysis from './components/RecentAnalysis';
+import PlaylistSelection from './components/PlaylistSelection';
 import { getMe } from './api';
 
 // 1. Create Auth Context
@@ -114,6 +115,14 @@ function AppContent() {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/analyze/playlists"
+        element={
+          <ProtectedRoute>
+            <PlaylistSelection />
           </ProtectedRoute>
         }
       />
