@@ -32,10 +32,7 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         console.error('Token refresh failed', refreshError);
-        // Clear tokens and redirect to login
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
-        window.location.href = '/login';
+        // Don't redirect, just pass the error along
         return Promise.reject(refreshError);
       }
     }
