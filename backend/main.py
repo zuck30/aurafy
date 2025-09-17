@@ -21,8 +21,7 @@ app.add_middleware(
 # Spotify API credentials
 SPOTIFY_CLIENT_ID = "85a4b164d555499a84c0d16725bad0fa"
 SPOTIFY_CLIENT_SECRET = "449877bbefaa407cae497994af27658b"
-# The redirect URI must be registered in your Spotify Developer Dashboard
-SPOTIFY_REDIRECT_URI = "http://localhost:8000/api/callback"
+SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"  # Changed from localhost to 127.0.0.1
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -80,19 +79,18 @@ async def login():
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
         "scope": scope,
-        "redirect_uri": SPOTIFY_REDIRECT_URI,
+        "redirect_uri": SPOTIFY_REDIRECT_URI,  # Use the variable here
         "show_dialog": True
     }
     auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url=auth_url)
-
 @app.get("/api/callback")
 async def callback(code: str):
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": SPOTIFY_REDIRECT_URI
+        "redirect_uri": SPOTIFY_REDIRECT_URI  # Use the variable here
     }
     headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
 
@@ -105,7 +103,7 @@ async def callback(code: str):
     access_token = token_info.get("access_token")
     refresh_token = token_info.get("refresh_token")
 
-    # Redirect to frontend with tokens in the hash
+    # Redirect to frontend - make sure this matches your frontend URL
     redirect_url = f"http://localhost:3000/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
