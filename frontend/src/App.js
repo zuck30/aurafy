@@ -22,6 +22,7 @@ const AuthProvider = ({ children }) => {
   const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refreshToken'));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [recentTracks, setRecentTracks] = useState([]);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -84,6 +85,8 @@ const AuthProvider = ({ children }) => {
     isLoggedIn: !!user, // We consider logged in if user object is present
     loading,
     logout,
+    recentTracks,
+    setRecentTracks,
   };
 
   return (

@@ -6,6 +6,14 @@ import requests
 import urllib.parse
 from typing import List, Dict
 import base64
+from pydantic import BaseModel
+
+class AudioFeaturesRequest(BaseModel):
+    track_ids: List[str]
+    access_token: str
+
+class AuraCalculationRequest(BaseModel):
+    features_list: List[Dict]
 
 app = FastAPI(title="Aurafy Your Playlist API")
 
@@ -228,9 +236,12 @@ def calculate_aura(features_list: List[Dict]):
 @app.get("/api/analyze/playlist/{playlist_id}")
 async def analyze_playlist(playlist_id: str, access_token: str):
     track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
-    audio_features = await get_audio_features(track_ids, access_token)
-    analysis_result = calculate_aura(audio_features)
+    try:
+        audio_features = await get_audio_features(track_ids, access_token)
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail={"original_error": e.detail, "track_ids_sent": track_ids})
 
+    analysis_result = calculate_aura(audio_features)
     playlist_details = await get_playlist(playlist_id, access_token)
 
     return {
@@ -254,6 +265,14 @@ async def analyze_recent(access_token: str):
         "analysis": analysis_result,
         "details": {"name": "Recently Played", "tracks": recent_data}
     }
+
+@app.post("/api/audio_features")
+async def get_audio_features_endpoint(request: AudioFeaturesRequest):
+    return await get_audio_features(request.track_ids, request.access_token)
+
+@app.post("/api/calculate_aura")
+async def calculate_aura_endpoint(request: AuraCalculationRequest):
+    return calculate_aura(request.features_list)
 
 if __name__ == "__main__":
     import uvicorn

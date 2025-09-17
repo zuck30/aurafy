@@ -15,8 +15,8 @@ import {
   Icon,
 } from '@chakra-ui/react';
 import { FaArrowLeft } from 'react-icons/fa';
-import { analyzeRecent } from '../api';
 import { useAuth } from '../App';
+import api from '../api'; // Import the default export
 
 const FeatureProgress = ({ label, value, color }) => (
   <Box>
@@ -47,34 +47,68 @@ const FeatureProgress = ({ label, value, color }) => (
 );
 
 const RecentAnalysis = () => {
-  const { token } = useAuth();
+  const { token, recentTracks } = useAuth();
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchAnalysis = async () => {
-      if (!token) return;
+    const performAnalysis = async () => {
+      if (!token || recentTracks.length === 0) {
+        setLoading(false);
+        // If there are no recent tracks, we can't analyze.
+        // This could happen if the user navigates here directly without visiting the dashboard.
+        if (recentTracks.length === 0 && !loading) {
+            setError("No recent tracks found. Please listen to some music or visit the dashboard first.");
+        }
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
-        const res = await analyzeRecent(token);
-        setAnalysis(res.data);
-      } catch (err) {
-        console.error("Failed to fetch recent analysis", err);
-        if (err.response?.status === 403) {
-          setError("Could not fetch recent tracks. This feature may be unavailable due to your Spotify account settings or region-specific restrictions that this app cannot override.");
-        } else {
-          const errorMessage = err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'Could not load analysis data for your recent tracks.';
-          setError(errorMessage);
+
+        // 1. Extract track IDs
+        const track_ids = recentTracks
+          .map(item => item?.track?.id)
+          .filter(id => id);
+        const unique_track_ids = [...new Set(track_ids)];
+
+        if (unique_track_ids.length === 0) {
+            setError("Could not find any valid tracks in your recent history.");
+            setLoading(false);
+            return;
         }
+
+        // 2. Get audio features
+        const audioFeaturesRes = await api.post('/audio_features', {
+          track_ids: unique_track_ids,
+          access_token: token,
+        });
+        const audio_features = audioFeaturesRes.data;
+
+        // 3. Calculate aura
+        const auraRes = await api.post('/calculate_aura', {
+          features_list: audio_features,
+        });
+        const analysisResult = auraRes.data;
+
+        // 4. Set final analysis object for rendering
+        setAnalysis({
+            analysis: analysisResult,
+            details: { name: "Recently Played", tracks: recentTracks }
+        });
+
+      } catch (err) {
+        console.error("Failed to perform recent analysis", err);
+        setError(err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'An error occurred during analysis.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAnalysis();
-  }, [token]);
+    performAnalysis();
+  }, [token, recentTracks]);
 
   if (loading) {
     return (
