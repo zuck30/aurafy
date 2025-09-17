@@ -73,6 +73,7 @@
    ```bash
    cd ../frontend
    npm install
+   npm install @chakra-ui/react@2.4.9
    ```
 
 4. **Configure Spotify API**
