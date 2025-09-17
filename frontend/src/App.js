@@ -19,20 +19,29 @@ export const useAuth = () => {
 // 2. Create Auth Provider
 const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [refreshToken, setRefreshToken] = useState(localStorage.getItem('refreshToken'));
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const hash = window.location.hash;
     let tokenInUrl = null;
+    let refreshTokenInUrl = null;
 
     if (hash) {
       const params = new URLSearchParams(hash.substring(1));
       tokenInUrl = params.get('access_token');
+      refreshTokenInUrl = params.get('refresh_token');
 
       if (tokenInUrl) {
         localStorage.setItem('token', tokenInUrl);
         setToken(tokenInUrl);
+      }
+      if (refreshTokenInUrl) {
+        localStorage.setItem('refreshToken', refreshTokenInUrl);
+        setRefreshToken(refreshTokenInUrl);
+      }
+      if(tokenInUrl || refreshTokenInUrl) {
         // Clean the URL
         window.history.replaceState(null, null, ' ');
       }
@@ -61,12 +70,16 @@ const AuthProvider = ({ children }) => {
 
   const logout = () => {
     setToken(null);
+    setRefreshToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
   };
 
   const authValue = {
     token,
+    refreshToken,
+    setToken,
     user,
     isLoggedIn: !!user, // We consider logged in if user object is present
     loading,

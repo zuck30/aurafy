@@ -74,7 +74,7 @@ async def root():
 
 @app.get("/api/login")
 async def login():
-    scope = "user-read-private user-read-email user-read-recently-played user-top-read playlist-read-private playlist-read-collaborative"
+    scope = "user-read-private user-read-email user-read-recently-played user-top-read playlist-read-private playlist-read-collaborative user-library-read"
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
@@ -106,6 +106,24 @@ async def callback(code: str):
     # Redirect to frontend - make sure this matches your frontend URL
     redirect_url = f"http://localhost:3000/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
+
+@app.get("/api/refresh_token")
+async def refresh_token(refresh_token: str):
+    auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
+    token_post_data = {
+        "grant_type": "refresh_token",
+        "refresh_token": refresh_token,
+    }
+    headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
+
+    response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail=f"Failed to refresh access token: {response.text}")
+
+    token_info = response.json()
+    access_token = token_info.get("access_token")
+    return {"access_token": access_token}
 
 def get_spotify_headers(access_token: str):
     return {"Authorization": f"Bearer {access_token}"}
@@ -146,11 +164,6 @@ async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
     playlist_data = await get_playlist(playlist_id, access_token)
     track_ids = [item['track']['id'] for item in playlist_data['tracks']['items'] if item.get('track') and item['track'].get('id')]
     return track_ids
-
-async def get_track_ids_from_recent(access_token: str):
-    recent_data = await get_recently_played(access_token)
-    track_ids = [item['track']['id'] for item in recent_data['items'] if item.get('track') and item['track'].get('id')]
-    return list(dict.fromkeys(track_ids)) # Remove duplicates
 
 async def get_audio_features(track_ids: List[str], access_token: str):
     if not track_ids:
@@ -224,15 +237,16 @@ async def analyze_playlist(playlist_id: str, access_token: str):
 
 @app.get("/api/analyze/recent")
 async def analyze_recent(access_token: str):
-    track_ids = await get_track_ids_from_recent(access_token)
-    audio_features = await get_audio_features(track_ids, access_token)
-    analysis_result = calculate_aura(audio_features)
+    recent_data = await get_recently_played(access_token)
+    track_ids = [item['track']['id'] for item in recent_data['items'] if item.get('track') and item['track'].get('id')]
+    unique_track_ids = list(dict.fromkeys(track_ids))
 
-    recent_tracks = await get_recently_played(access_token)
+    audio_features = await get_audio_features(unique_track_ids, access_token)
+    analysis_result = calculate_aura(audio_features)
 
     return {
         "analysis": analysis_result,
-        "details": {"name": "Recently Played", "tracks": recent_tracks}
+        "details": {"name": "Recently Played", "tracks": recent_data}
     }
 
 if __name__ == "__main__":
