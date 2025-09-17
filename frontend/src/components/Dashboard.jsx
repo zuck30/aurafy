@@ -19,8 +19,6 @@ import {
   Icon,
   Drawer,
   DrawerContent,
-  DrawerOverlay,
-  useColorModeValue,
 } from '@chakra-ui/react';
 import { 
   FaHome, 
@@ -42,9 +40,9 @@ const SidebarContent = ({ onClose, ...rest }) => {
 
   return (
     <Box
-      bg={useColorModeValue('white', 'gray.900')}
+      bg={{ base: 'white', _dark: 'gray.900' }}
       borderRight="1px"
-      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
+      borderRightColor={{ base: 'gray.200', _dark: 'gray.700' }}
       w={{ base: 'full', md: 60 }}
       pos="fixed"
       h="full"
@@ -124,9 +122,9 @@ const MobileNav = ({ onOpen, ...rest }) => {
       px={{ base: 4, md: 24 }}
       height="20"
       alignItems="center"
-      bg={useColorModeValue('white', 'gray.900')}
+      bg={{ base: 'white', _dark: 'gray.900' }}
       borderBottomWidth="1px"
-      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      borderBottomColor={{ base: 'gray.200', _dark: 'gray.700' }}
       justifyContent="space-between"
       {...rest}
     >
@@ -147,7 +145,7 @@ const MobileNav = ({ onOpen, ...rest }) => {
 const PlaylistCard = ({ playlist }) => (
   <RouterLink to={`/analyze/playlist/${playlist.id}`}>
     <Card
-      bg={useColorModeValue('gray.100', 'gray.700')}
+      bg={{ base: 'gray.100', _dark: 'gray.700' }}
       _hover={{ transform: 'scale(1.05)', shadow: 'lg' }}
       transition="all 0.2s"
     >
@@ -164,7 +162,7 @@ const PlaylistCard = ({ playlist }) => (
 );
 
 const TrackItem = ({ item }) => (
-  <Flex align="center" p="2" _hover={{ bg: useColorModeValue('gray.200', 'gray.600') }} borderRadius="md">
+  <Flex align="center" p="2" _hover={{ bg: { base: 'gray.200', _dark: 'gray.600' } }} borderRadius="md">
     <Image boxSize="50px" src={item.track.album.images[0]?.url} alt={item.track.name} mr="4" borderRadius="md" />
     <Box>
       <Text fontWeight="bold">{item.track.name}</Text>
@@ -213,7 +211,7 @@ const Dashboard = () => {
   }
 
   return (
-    <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.800')}>
+    <Box minH="100vh" bg={{ base: 'gray.100', _dark: 'gray.800' }}>
       <SidebarContent onClose={() => onClose} display={{ base: 'none', md: 'block' }} />
       <Drawer
         isOpen={isOpen}
@@ -223,7 +221,6 @@ const Dashboard = () => {
         onOverlayClick={onClose}
         size="full"
       >
-        <DrawerOverlay />
         <DrawerContent>
           <SidebarContent onClose={onClose} />
         </DrawerContent>
