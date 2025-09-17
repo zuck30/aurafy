@@ -11,7 +11,6 @@ import {
   Card,
   CardBody,
   Progress,
-  useColorModeValue,
   Button,
   Icon,
 } from '@chakra-ui/react';
@@ -22,7 +21,13 @@ import { useAuth } from '../App';
 const FeatureProgress = ({ label, value, color }) => (
   <Box>
     <Text mb="1" textTransform="capitalize" fontWeight="bold">{label}</Text>
-    <Progress value={value * 100} colorScheme={color} size="lg" borderRadius="md" bg={useColorModeValue('gray.200', 'gray.600')} />
+    <Progress 
+      value={value * 100} 
+      colorScheme={color} 
+      size="lg" 
+      borderRadius="md" 
+      bg={{ base: 'gray.200', _dark: 'gray.600' }} 
+    />
   </Box>
 );
 
@@ -48,8 +53,8 @@ const RecentAnalysis = () => {
     fetchAnalysis();
   }, [token]);
 
-  const bgColor = useColorModeValue('gray.50', 'gray.900');
-  const cardBgColor = useColorModeValue('white', 'gray.800');
+  const bgColor = { base: 'gray.50', _dark: 'gray.900' };
+  const cardBgColor = { base: 'white', _dark: 'gray.800' };
 
   if (loading) {
     return (
@@ -72,7 +77,7 @@ const RecentAnalysis = () => {
             Back to Dashboard
           </Button>
         </VStack>
-      </center>
+      </Center> 
     );
   }
 
