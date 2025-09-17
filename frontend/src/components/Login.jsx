@@ -1,12 +1,19 @@
 import React from 'react';
-import { Box, Button, Center, Heading, Text, VStack, Icon } from '@chakra-ui/react';
+import { Box, Button, Center, Heading, Text, VStack, Image, Icon } from '@chakra-ui/react';
 import { FaSpotify } from 'react-icons/fa';
+import logo from './aurafy.png'; // Using the exact import path you provided
 
 const LOGIN_URL = 'http://localhost:8000/api/login';
 
 const Login = () => {
   return (
-    <Box position="relative" h="100vh" w="100vw" overflow="hidden">
+    <Box
+      minH="100vh"
+      w="100vw"
+      overflow="hidden"
+      position="relative"
+      fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    >
       {/* Background Video */}
       <Box
         as="iframe"
@@ -19,49 +26,135 @@ const Login = () => {
         h="120%"
         pointerEvents="none"
         zIndex="-1"
+        allow="autoplay; encrypted-media"
+      />
+
+      {/* Background Pattern */}
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        right="0"
+        bottom="0"
+        bgImage={`
+          radial-gradient(circle at 20% 20%, rgba(29, 185, 84, 0.2) 0%, transparent 50%),
+          radial-gradient(circle at 80% 80%, rgba(30, 215, 96, 0.2) 0%, transparent 50%),
+          radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)
+        `}
+        animation="float 20s ease-in-out infinite"
+        sx={{
+          '@keyframes float': {
+            '0%, 100%': { transform: 'translateY(0px)' },
+            '50%': { transform: 'translateY(-20px)' },
+          },
+        }}
       />
 
       {/* Overlay */}
-      <Box position="absolute" top="0" left="0" w="100%" h="100%" bg="blackAlpha.600" />
+      <Box
+        position="absolute"
+        top="0"
+        left="0"
+        w="100%"
+        h="100%"
+        bg="blackAlpha.700"
+        backdropFilter="blur(12px)"
+      />
 
-      <Center position="relative" h="100%" px={4}>
+      <Center h="100vh" px={{ base: 4, md: 6 }}>
         <Box
           p={{ base: 6, md: 10 }}
           maxW="md"
           w="full"
-          bg="whiteAlpha.100"
-          backdropFilter="blur(10px)"
-          borderRadius="xl"
-          boxShadow="lg"
+          bg="rgba(18, 18, 18, 0.95)"
+          backdropFilter="blur(20px)"
+          borderRadius="3xl"
+          boxShadow="0 20px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.1)"
           textAlign="center"
           border="1px solid"
           borderColor="whiteAlpha.200"
+          position="relative"
+          overflow="hidden"
+          _before={{
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            bgGradient: 'linear(to-r, transparent, #1db954, transparent)',
+          }}
         >
-          <VStack spacing={6}>
-            <Heading as="h1" size="2xl" color="white" fontWeight="bold">
+          <VStack spacing={8}>
+            {/* Logo Section */}
+            <Box
+              w={{ base: '100px', md: '120px' }}
+              h={{ base: '100px', md: '120px' }}
+              mx="auto"
+            >
+              <Image
+                src={logo}
+                alt="Aurafy Logo"
+                w="100%"
+                h="100%"
+                objectFit="contain"
+              />
+            </Box>
+
+            <Heading
+              as="h1"
+              size={{ base: '2xl', md: '3xl' }}
+              fontWeight="900"
+              letterSpacing="-1px"
+              color="white"
+            >
               Aurafy
             </Heading>
-            <Text fontSize="lg" color="gray.200">
-              Discover the hidden aura of your Spotify playlists.
-            </Text>
-            <Text color="gray.300">
-              Connect your Spotify account to get started.
-            </Text>
 
+            {/* Content Section */}
+            <VStack spacing={4}>
+              <Text
+                fontSize={{ base: 'md', md: 'lg' }}
+                color="white"
+                fontWeight="700"
+              >
+                Discover the <Text as="span" color="#1ed760">hidden aura</Text> of your Spotify playlists
+              </Text>
+              <Text fontSize="sm" color="gray.300" lineHeight="1.6">
+                Connect your Spotify account to unlock a vibrant, personalized experience.
+              </Text>
+            </VStack>
+
+            {/* Login Section */}
             <Button
               as="a"
               href={LOGIN_URL}
               size="lg"
               w="full"
-              colorScheme="green"
-              leftIcon={<Icon as={FaSpotify} />}
-              _hover={{ bg: 'green.500' }}
+              bg="#1db954"
+              color="white"
+              leftIcon={<Icon as={FaSpotify} boxSize={6} />}
+              borderRadius="full"
+              fontWeight="700"
+              letterSpacing="0.5px"
+              boxShadow="0 4px 15px rgba(29, 185, 84, 0.3)"
+              _hover={{
+                bg: '#1ed760',
+                transform: 'translateY(-2px)',
+                boxShadow: '0 6px 20px rgba(29, 185, 84, 0.4)',
+              }}
+              _active={{ transform: 'translateY(0)' }}
+              transition="all 0.3s ease"
             >
               Continue with Spotify
             </Button>
 
+            {/* Footer Section */}
             <Text fontSize="xs" color="gray.400" pt={4}>
-              By continuing, you agree to our non-existent Terms of Service.
+              By continuing, you agree to our{' '}
+              <Text as="span" color="#1db954" _hover={{ textDecor: 'underline' }}>
+                non-existent Terms of Service
+              </Text>.
             </Text>
           </VStack>
         </Box>
