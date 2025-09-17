@@ -36,11 +36,7 @@ const Login = () => {
         left="0"
         right="0"
         bottom="0"
-        bgImage={`
-          radial-gradient(circle at 20% 20%, rgba(29, 185, 84, 0.2) 0%, transparent 50%),
-          radial-gradient(circle at 80% 80%, rgba(30, 215, 96, 0.2) 0%, transparent 50%),
-          radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 50%)
-        `}
+     
         animation="float 20s ease-in-out infinite"
         sx={{
           '@keyframes float': {
@@ -118,7 +114,7 @@ const Login = () => {
                 color="white"
                 fontWeight="700"
               >
-                Discover the <Text as="span" color="#1ed760">hidden aura</Text> of your Spotify playlists
+                Discover the <Text as="span" color="#1ed760">aura</Text> of your Spotify playlists
               </Text>
               <Text fontSize="sm" color="gray.300" lineHeight="1.6">
                 Connect your Spotify account to unlock a vibrant, personalized experience.
