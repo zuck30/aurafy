@@ -25,6 +25,7 @@ import {
   FaPalette, 
   FaSignOutAlt,
   FaBars,
+  FaList,
 } from 'react-icons/fa';
 import { getPlaylists, getRecentlyPlayed } from '../api';
 import { useAuth } from '../App';
@@ -36,6 +37,7 @@ const SidebarContent = ({ onClose, ...rest }) => {
   const navItems = [
     { name: 'Home', icon: FaHome, path: '/' },
     { name: 'Analyze Recent', icon: FaPalette, path: '/analyze/recent' },
+    { name: 'Analyze Playlist', icon: FaList, path: '/analyze/playlists' },
   ];
 
   return (

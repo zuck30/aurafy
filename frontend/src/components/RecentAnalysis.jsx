@@ -108,12 +108,16 @@ const RecentAnalysis = () => {
         <VStack flex="1" spacing={6} align="stretch">
           <Card bg={cardBgColor} p={6} shadow="lg">
             <Heading size="lg" mb={6}>Average Audio Features</Heading>
-            <VStack spacing={5} align="stretch">
-              <FeatureProgress label="Danceability" value={avg_features.danceability} color="pink" />
-              <FeatureProgress label="Energy" value={avg_features.energy} color="yellow" />
-              <FeatureProgress label="Positivity" value={avg_features.valence} color="orange" />
-              <FeatureProgress label="Acousticness" value={avg_features.acousticness} color="teal" />
-            </VStack>
+            {avg_features && Object.keys(avg_features).length > 0 ? (
+              <VStack spacing={5} align="stretch">
+                <FeatureProgress label="Danceability" value={avg_features.danceability} color="pink" />
+                <FeatureProgress label="Energy" value={avg_features.energy} color="yellow" />
+                <FeatureProgress label="Positivity" value={avg_features.valence} color="orange" />
+                <FeatureProgress label="Acousticness" value={avg_features.acousticness} color="teal" />
+              </VStack>
+            ) : (
+              <Text>Not enough data to display audio features.</Text>
+            )}
           </Card>
         </VStack>
       </Flex>

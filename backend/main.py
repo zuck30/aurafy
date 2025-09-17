@@ -31,40 +31,40 @@ SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1"
 # Aura definitions
 AURAS = [
     {
-        "name": "The Pogo-Sticking Toddler",
-        "description": "Your music is so energetic and danceable, it's like a sugar-fueled toddler on a pogo stick!",
-        "conditions": lambda f: f["danceability"] > 0.8 and f["energy"] > 0.7,
-        "color": "#FF9E80"
+        "name": "High-Energy Dance Party",
+        "description": "This playlist is a non-stop dance party! Perfect for a workout or a night out.",
+        "conditions": lambda f: f["danceability"] > 0.7 and f["energy"] > 0.7,
+        "color": "#FF5722"  # Deep Orange
     },
     {
-        "name": "The Contemplative Emo Poet",
-        "description": "Your playlist is deep, acoustic, and slightly melancholic - perfect for writing poetry in a coffee shop.",
-        "conditions": lambda f: f["valence"] < 0.4 and f["acousticness"] > 0.6,
-        "color": "#6A0DAD"
+        "name": "Melancholic introspection",
+        "description": "This playlist is perfect for a rainy day, with its mellow and introspective vibe.",
+        "conditions": lambda f: f["valence"] < 0.4 and f["energy"] < 0.5,
+        "color": "#42A5F5"  # Blue
     },
     {
-        "name": "The Anxious Hummingbird",
-        "description": "Fast-paced but low energy - your music is like a hummingbird that's had too much coffee!",
-        "conditions": lambda f: f["tempo"] > 120 and f["energy"] < 0.5,
-        "color": "#90CAF9"
+        "name": "Upbeat & Happy",
+        "description": "This playlist is full of positive vibes and will be sure to put a smile on your face.",
+        "conditions": lambda f: f["valence"] > 0.7 and f["energy"] > 0.6,
+        "color": "#FFCA28"  # Amber
     },
     {
-        "name": "The Euphoric Clubber",
-        "description": "High energy, high positivity - you're basically mainlining joy at the club!",
-        "conditions": lambda f: f["energy"] > 0.8 and f["valence"] > 0.8,
-        "color": "#FFEB3B"
+        "name": "Acoustic Cafe",
+        "description": "This playlist is perfect for a chill afternoon at a coffee shop, with its acoustic and relaxed feel.",
+        "conditions": lambda f: f["acousticness"] > 0.6 and f["energy"] < 0.5,
+        "color": "#8D6E63"  # Brown
     },
     {
-        "name": "The Moody Vampire",
-        "description": "Dark, atmospheric, and probably only listens to music at night. Do you sparkle in sunlight?",
-        "conditions": lambda f: f["valence"] < 0.3 and f["energy"] < 0.4,
-        "color": "#212121"
+        "name": "Energetic & Angry",
+        "description": "This playlist is full of raw power and aggression, perfect for a workout or when you need to let off some steam.",
+        "conditions": lambda f: f["energy"] > 0.8 and f["valence"] < 0.3,
+        "color": "#B71C1C"  # Red
     },
     {
-        "name": "The Chill Beach Bum",
-        "description": "Acoustic, positive, and relaxed - your playlist is basically a hammock between two palm trees.",
-        "conditions": lambda f: f["acousticness"] > 0.7 and f["valence"] > 0.6 and f["energy"] < 0.5,
-        "color": "#81D4FA"
+        "name": "Late Night Drive",
+        "description": "This playlist is the perfect soundtrack for a late-night drive, with its atmospheric and electronic sound.",
+        "conditions": lambda f: f["energy"] > 0.6 and f["danceability"] > 0.6 and f["instrumentalness"] > 0.5,
+        "color": "#7E57C2"  # Deep Purple
     }
 ]
 
@@ -184,6 +184,7 @@ def calculate_aura(features_list: List[Dict]):
         "energy": sum(f["energy"] for f in features_list) / len(features_list),
         "valence": sum(f["valence"] for f in features_list) / len(features_list),
         "acousticness": sum(f["acousticness"] for f in features_list) / len(features_list),
+        "instrumentalness": sum(f["instrumentalness"] for f in features_list) / len(features_list),
         "tempo": sum(f["tempo"] for f in features_list) / len(features_list),
     }
 

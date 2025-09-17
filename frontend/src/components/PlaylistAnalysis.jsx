@@ -43,19 +43,17 @@ useEffect(() => {
     if (!token) return;
     try {
       setLoading(true);
-      const res = await analyzeRecent(token);
-      console.log('Analysis response:', res); // Add this
+      const res = await analyzePlaylist(token, id);
       setAnalysis(res.data);
     } catch (error) {
-      console.error("Failed to fetch recent analysis", error);
-      console.error("Error details:", error.response?.data); // Add this
+      console.error("Failed to fetch playlist analysis", error);
     } finally {
       setLoading(false);
     }
   };
 
   fetchAnalysis();
-}, [token]);
+}, [token, id]);
 
   const bgColor = { base: 'gray.50', _dark: 'gray.900' };
   const cardBgColor = { base: 'white', _dark: 'gray.800' };
@@ -126,12 +124,16 @@ useEffect(() => {
         <VStack flex="1" spacing={6} align="stretch">
           <Card bg={cardBgColor} p={6} shadow="lg">
             <Heading size="lg" mb={6}>Average Audio Features</Heading>
-            <VStack spacing={5} align="stretch">
-              <FeatureProgress label="Danceability" value={avg_features.danceability} color="pink" />
-              <FeatureProgress label="Energy" value={avg_features.energy} color="yellow" />
-              <FeatureProgress label="Positivity" value={avg_features.valence} color="orange" />
-              <FeatureProgress label="Acousticness" value={avg_features.acousticness} color="teal" />
-            </VStack>
+            {avg_features && Object.keys(avg_features).length > 0 ? (
+              <VStack spacing={5} align="stretch">
+                <FeatureProgress label="Danceability" value={avg_features.danceability} color="pink" />
+                <FeatureProgress label="Energy" value={avg_features.energy} color="yellow" />
+                <FeatureProgress label="Positivity" value={avg_features.valence} color="orange" />
+                <FeatureProgress label="Acousticness" value={avg_features.acousticness} color="teal" />
+              </VStack>
+            ) : (
+              <Text>Not enough data to display audio features.</Text>
+            )}
           </Card>
         </VStack>
       </Flex>
