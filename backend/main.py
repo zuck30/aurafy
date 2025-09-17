@@ -1,9 +1,11 @@
 # backend/main.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 import requests
-from typing import List, Dict, Optional
-import random
+import urllib.parse
+from typing import List, Dict
+import base64
 
 app = FastAPI(title="Aurafy Your Playlist API")
 
@@ -16,45 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Spotify API credentials (should be in environment variables in production)
-SPOTIFY_CLIENT_ID = "your_spotify_client_id"
-SPOTIFY_CLIENT_SECRET = "your_spotify_client_secret"
-SPOTIFY_REDIRECT_URI = "http://localhost:3000/callback"
+# Spotify API credentials
+SPOTIFY_CLIENT_ID = "85a4b164d555499a84c0d16725bad0fa"
+SPOTIFY_CLIENT_SECRET = "449877bbefaa407cae497994af27658b"
+# The redirect URI must be registered in your Spotify Developer Dashboard
+SPOTIFY_REDIRECT_URI = "http://localhost:8000/api/callback"
 
-# Mock data for development (remove when connecting to real Spotify API)
-MOCK_TRACKS = [
-    {
-        "name": "Dancing Queen",
-        "artists": [{"name": "ABBA"}],
-        "album": {"images": [{"url": "https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96"}]},
-        "id": "1"
-    },
-    {
-        "name": "Hurt",
-        "artists": [{"name": "Johnny Cash"}],
-        "album": {"images": [{"url": "https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96"}]},
-        "id": "2"
-    }
-]
+# Spotify API URLs
+SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
+SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
+SPOTIFY_API_BASE_URL = "https://api.spotify.com/v1"
 
-MOCK_AUDIO_FEATURES = {
-    "1": {
-        "danceability": 0.85,
-        "energy": 0.75,
-        "valence": 0.95,
-        "acousticness": 0.2,
-        "tempo": 120
-    },
-    "2": {
-        "danceability": 0.3,
-        "energy": 0.4,
-        "valence": 0.2,
-        "acousticness": 0.9,
-        "tempo": 60
-    }
-}
-
-# Aura definitions - our humorous mood classifications
+# Aura definitions
 AURAS = [
     {
         "name": "The Pogo-Sticking Toddler",
@@ -100,46 +75,112 @@ async def root():
 
 @app.get("/api/login")
 async def login():
-    # In a real implementation, this would redirect to Spotify auth
-    auth_url = f"https://accounts.spotify.com/authorize?client_id={SPOTIFY_CLIENT_ID}&response_type=code&redirect_uri={SPOTIFY_REDIRECT_URI}&scope=user-read-recently-played user-top-read playlist-read-private"
-    return {"auth_url": auth_url}
+    scope = "user-read-private user-read-email user-read-recently-played user-top-read playlist-read-private"
+    params = {
+        "client_id": SPOTIFY_CLIENT_ID,
+        "response_type": "code",
+        "scope": scope,
+        "redirect_uri": SPOTIFY_REDIRECT_URI,
+        "show_dialog": True
+    }
+    auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
+    return RedirectResponse(url=auth_url)
 
 @app.get("/api/callback")
 async def callback(code: str):
-    # In a real implementation, this would exchange code for access token
-    return {"access_token": "mock_access_token", "token_type": "bearer"}
+    auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
+    token_post_data = {
+        "grant_type": "authorization_code",
+        "code": code,
+        "redirect_uri": SPOTIFY_REDIRECT_URI
+    }
+    headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
 
-@app.get("/api/recently-played")
-async def get_recently_played(access_token: str):
-    # Mock implementation - replace with actual Spotify API call
-    return {"items": MOCK_TRACKS}
+    response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
+
+    if response.status_code != 200:
+        raise HTTPException(status_code=400, detail=f"Failed to retrieve access token: {response.text}")
+
+    token_info = response.json()
+    access_token = token_info.get("access_token")
+    refresh_token = token_info.get("refresh_token")
+
+    # Redirect to frontend with tokens in the hash
+    redirect_url = f"http://localhost:3000/#access_token={access_token}&refresh_token={refresh_token}"
+    return RedirectResponse(url=redirect_url)
+
+def get_spotify_headers(access_token: str):
+    return {"Authorization": f"Bearer {access_token}"}
+
+@app.get("/api/me")
+async def get_me(access_token: str):
+    headers = get_spotify_headers(access_token)
+    response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.json())
+    return response.json()
 
 @app.get("/api/playlists")
 async def get_playlists(access_token: str):
-    # Mock implementation
-    mock_playlists = [
-        {"id": "1", "name": "Chill Vibes", "images": [{"url": "https://misc.scdn.co/liked-songs/liked-songs-640.png"}]},
-        {"id": "2", "name": "Workout Mix", "images": [{"url": "https://misc.scdn.co/liked-songs/liked-songs-640.png"}]}
-    ]
-    return {"items": mock_playlists}
+    headers = get_spotify_headers(access_token)
+    response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/playlists", headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.json())
+    return response.json()
+
+@app.get("/api/recently-played")
+async def get_recently_played(access_token: str):
+    headers = get_spotify_headers(access_token)
+    response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/player/recently-played?limit=50", headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.json())
+    return response.json()
 
 @app.get("/api/playlist/{playlist_id}")
 async def get_playlist(playlist_id: str, access_token: str):
-    # Mock implementation
-    return {"tracks": {"items": [{"track": track} for track in MOCK_TRACKS]}}
+    headers = get_spotify_headers(access_token)
+    response = requests.get(f"{SPOTIFY_API_BASE_URL}/playlists/{playlist_id}", headers=headers)
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.json())
+    return response.json()
 
-@app.get("/api/analyze/playlist/{playlist_id}")
-async def analyze_playlist(playlist_id: str, access_token: str):
-    # Get playlist tracks
-    # In real implementation, we'd fetch actual tracks and their audio features
-    # For now, using mock data
-    
-    # Calculate average audio features
-    features_list = [MOCK_AUDIO_FEATURES[track["id"]] for track in MOCK_TRACKS if track["id"] in MOCK_AUDIO_FEATURES]
-    
+async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
+    playlist_data = await get_playlist(playlist_id, access_token)
+    track_ids = [item['track']['id'] for item in playlist_data['tracks']['items'] if item.get('track') and item['track'].get('id')]
+    return track_ids
+
+async def get_track_ids_from_recent(access_token: str):
+    recent_data = await get_recently_played(access_token)
+    track_ids = [item['track']['id'] for item in recent_data['items'] if item.get('track') and item['track'].get('id')]
+    return list(dict.fromkeys(track_ids)) # Remove duplicates
+
+async def get_audio_features(track_ids: List[str], access_token: str):
+    if not track_ids:
+        return []
+    headers = get_spotify_headers(access_token)
+    # Spotify API has a limit of 100 IDs per request
+    audio_features_list = []
+    for i in range(0, len(track_ids), 100):
+        batch = track_ids[i:i+100]
+        params = {"ids": ",".join(batch)}
+        response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features", headers=headers, params=params)
+        if response.status_code != 200:
+            raise HTTPException(status_code=response.status_code, detail=response.json())
+        audio_features_list.extend(response.json().get('audio_features', []))
+    return audio_features_list
+
+def calculate_aura(features_list: List[Dict]):
+    features_list = [f for f in features_list if f] # Filter out None values
     if not features_list:
-        raise HTTPException(status_code=404, detail="No audio features found")
-    
+        return {
+            "aura": {
+                "name": "The Mysterious Void",
+                "description": "We couldn't find any audio features. Is this playlist just a figment of your imagination?",
+                "color": "#9E9E9E"
+            },
+            "avg_features": {}
+        }
+
     avg_features = {
         "danceability": sum(f["danceability"] for f in features_list) / len(features_list),
         "energy": sum(f["energy"] for f in features_list) / len(features_list),
@@ -147,8 +188,7 @@ async def analyze_playlist(playlist_id: str, access_token: str):
         "acousticness": sum(f["acousticness"] for f in features_list) / len(features_list),
         "tempo": sum(f["tempo"] for f in features_list) / len(features_list),
     }
-    
-    # Find matching aura
+
     matched_aura = None
     for aura in AURAS:
         try:
@@ -158,7 +198,6 @@ async def analyze_playlist(playlist_id: str, access_token: str):
         except:
             continue
     
-    # If no specific aura matched, assign a default one
     if not matched_aura:
         matched_aura = {
             "name": "The Eclectic Mixmaster",
@@ -166,25 +205,36 @@ async def analyze_playlist(playlist_id: str, access_token: str):
             "color": "#9E9E9E"
         }
     
-    # Find most extreme songs for each feature
-    extremes = {
-        "most_danceable": max(MOCK_TRACKS, key=lambda t: MOCK_AUDIO_FEATURES.get(t["id"], {}).get("danceability", 0)),
-        "least_danceable": min(MOCK_TRACKS, key=lambda t: MOCK_AUDIO_FEATURES.get(t["id"], {}).get("danceability", 1)),
-        "most_energetic": max(MOCK_TRACKS, key=lambda t: MOCK_AUDIO_FEATURES.get(t["id"], {}).get("energy", 0)),
-        "least_energetic": min(MOCK_TRACKS, key=lambda t: MOCK_AUDIO_FEATURES.get(t["id"], {}).get("energy", 1)),
-    }
-    
     return {
         "aura": matched_aura,
         "avg_features": avg_features,
-        "extremes": extremes
+    }
+
+@app.get("/api/analyze/playlist/{playlist_id}")
+async def analyze_playlist(playlist_id: str, access_token: str):
+    track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
+    audio_features = await get_audio_features(track_ids, access_token)
+    analysis_result = calculate_aura(audio_features)
+
+    playlist_details = await get_playlist(playlist_id, access_token)
+
+    return {
+        "analysis": analysis_result,
+        "details": playlist_details
     }
 
 @app.get("/api/analyze/recent")
 async def analyze_recent(access_token: str):
-    # This would analyze recently played tracks
-    # For now, we'll just return the same as playlist analysis
-    return await analyze_playlist("mock", access_token)
+    track_ids = await get_track_ids_from_recent(access_token)
+    audio_features = await get_audio_features(track_ids, access_token)
+    analysis_result = calculate_aura(audio_features)
+
+    recent_tracks = await get_recently_played(access_token)
+
+    return {
+        "analysis": analysis_result,
+        "details": {"name": "Recently Played", "tracks": recent_tracks}
+    }
 
 if __name__ == "__main__":
     import uvicorn
