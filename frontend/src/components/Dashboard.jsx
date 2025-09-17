@@ -1,760 +1,258 @@
-// frontend/src/components/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router-dom';
+import {
+  Box,
+  Flex,
+  Text,
+  VStack,
+  Heading,
+  SimpleGrid,
+  Card,
+  CardBody,
+  Image,
+  Spinner,
+  Center,
+  useDisclosure,
+  IconButton,
+  Avatar,
+  Button,
+  Icon,
+  Drawer,
+  DrawerContent,
+  DrawerOverlay,
+  useColorModeValue,
+} from '@chakra-ui/react';
 import { 
   FaHome, 
   FaPalette, 
-  FaSearch, 
-  FaUser, 
-  FaMusic, 
-  FaBars, 
-  FaTimes,
-  FaClock,
-  FaHeadphones,
-  FaArrowRight,
   FaSignOutAlt,
-  FaHeart,
-  FaRegClock,
-  FaCog
+  FaBars,
 } from 'react-icons/fa';
-import { IoIosMusicalNotes } from 'react-icons/io';
-import './Dashboard.css';
+import { getPlaylists, getRecentlyPlayed } from '../api';
+import { useAuth } from '../App';
 
-// Sidebar component
-const Sidebar = ({ activePath, isOpen, onClose }) => {
+const SidebarContent = ({ onClose, ...rest }) => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
+
   const navItems = [
-    { path: '/', name: 'Dashboard', icon: <FaHome /> },
-    { path: '/analyze/recent', name: 'Analyze', icon: <FaPalette /> },
-    { path: '/search', name: 'Search', icon: <FaSearch /> },
-    { path: '/library', name: 'Library', icon: <FaMusic /> },
-    { path: '/profile', name: 'Profile', icon: <FaUser /> },
+    { name: 'Home', icon: FaHome, path: '/' },
+    { name: 'Analyze Recent', icon: FaPalette, path: '/analyze/recent' },
   ];
 
-  // Mock user data
-  const user = {
-    name: "Alex Johnson",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8dXNlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60"
-  };
-
   return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && <div className="sidebar-overlay" onClick={onClose} />}
-      
-      <aside className={`sidebar ${isOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo">
-          <div className="logo-container">
-            <IoIosMusicalNotes className="logo-icon" />
-          </div>
-          <button className="mobile-close-btn" onClick={onClose}>
-            <FaTimes />
-          </button>
-        </div>
-        
-        <nav className="sidebar-nav">
-          <ul>
-            {navItems.map((item) => (
-              <li key={item.name} className={activePath === item.path ? 'active' : ''}>
-                <Link to={item.path} onClick={onClose}>
-                  <div className="icon-wrapper">{item.icon}</div>
-                  <div className="tooltip">{item.name}</div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        
-        <div className="sidebar-footer">
-          <div className="user-info">
-            <img src={user.avatar} alt={user.name} className="user-avatar" />
-          </div>
-          <div className="sidebar-actions">
-            <button className="sidebar-btn">
-              <FaCog />
-              <div className="tooltip">Settings</div>
-            </button>
-            <button className="sidebar-btn">
-              <FaSignOutAlt />
-              <div className="tooltip">Logout</div>
-            </button>
-          </div>
-        </div>
-      </aside>
-    </>
-  );
-};
-
-// Stats Card Component
-const StatCard = ({ icon, value, label, trend }) => {
-  return (
-    <div className="stat-card">
-      <div className="stat-icon">{icon}</div>
-      <div className="stat-info">
-        <span className="stat-number">{value}</span>
-        <span className="stat-label">{label}</span>
-        {trend && <span className="stat-trend">{trend}</span>}
-      </div>
-    </div>
-  );
-};
-
-// Track Item Component
-const TrackItem = ({ track, index }) => {
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
-
-  return (
-    <div className="track-item">
-      <div className="track-number">{index + 1}</div>
-      <div className="track-image">
-        <img
-          src={track.album.images[0]?.url}
-          alt={track.name}
-          loading="lazy"
-        />
-      </div>
-      <div className="track-info">
-        <h4 className="track-name">{track.name}</h4>
-        <p className="track-artist">
-          {track.artists.map(artist => artist.name).join(', ')}
-        </p>
-      </div>
-      <div className="track-time">
-        {formatTime(track.played_at)}
-      </div>
-      <button className="track-analyze-btn" title="Quick analyze">
-        <FaPalette />
-      </button>
-    </div>
-  );
-};
-
-// Playlist Card Component
-const PlaylistCard = ({ playlist }) => {
-  return (
-    <Link
-      to={`/analyze/playlist/${playlist.id}`}
-      className="playlist-card"
+    <Box
+      bg={useColorModeValue('white', 'gray.900')}
+      borderRight="1px"
+      borderRightColor={useColorModeValue('gray.200', 'gray.700')}
+      w={{ base: 'full', md: 60 }}
+      pos="fixed"
+      h="full"
+      {...rest}
     >
-      <div className="playlist-image">
-        <img
-          src={playlist.images[0]?.url}
-          alt={playlist.name}
-          loading="lazy"
+      <Flex h="20" alignItems="center" mx="8" justifyContent="space-between">
+        <Text fontSize="2xl" fontFamily="monospace" fontWeight="bold">
+          Aurafy
+        </Text>
+        <IconButton
+          display={{ base: 'flex', md: 'none' }}
+          onClick={onClose}
+          variant="outline"
+          aria-label="close menu"
+          icon={<FaPalette />}
         />
-        <div className="playlist-overlay">
-          <div className="play-button">
-            <FaMusic />
-          </div>
-        </div>
-      </div>
-      <div className="playlist-info">
-        <h3 className="playlist-name">{playlist.name}</h3>
-        <p className="playlist-description">{playlist.description}</p>
-        <span className="playlist-tracks">{playlist.tracks.total} tracks</span>
-      </div>
-    </Link>
+      </Flex>
+      {navItems.map((link) => (
+        <NavItem key={link.name} icon={link.icon} path={link.path} isActive={location.pathname === link.path}>
+          {link.name}
+        </NavItem>
+      ))}
+      <VStack pos="absolute" bottom="8" w="full" spacing="4">
+        <Flex align="center">
+          <Avatar size="sm" name={user?.display_name} src={user?.images?.[0]?.url} />
+          <Text ml="3">{user?.display_name}</Text>
+        </Flex>
+        <Button
+          w="80%"
+          colorScheme="red"
+          leftIcon={<FaSignOutAlt />}
+          onClick={logout}
+        >
+          Logout
+        </Button>
+      </VStack>
+    </Box>
   );
 };
 
-// Skeleton loading component
-const SkeletonLoader = () => {
+const NavItem = ({ icon, children, path, isActive, ...rest }) => {
   return (
-    <div className="dashboard-loading">
-      <div className="loading-content">
-        <div className="skeleton-header">
-          <div className="skeleton-title"></div>
-          <div className="skeleton-subtitle"></div>
-        </div>
-        
-        <div className="skeleton-stats">
-          {[1, 2, 3].map(item => (
-            <div key={item} className="skeleton-stat"></div>
-          ))}
-        </div>
-        
-        <div className="skeleton-actions">
-          <div className="skeleton-action featured"></div>
-          <div className="skeleton-action"></div>
-        </div>
-        
-        <div className="skeleton-section">
-          <div className="skeleton-section-header"></div>
-          <div className="skeleton-grid">
-            {[1, 2, 3, 4, 5].map(item => (
-              <div key={item} className="skeleton-card"></div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="skeleton-section">
-          <div className="skeleton-section-header"></div>
-          <div className="skeleton-list">
-            {[1, 2, 3, 4].map(item => (
-              <div key={item} className="skeleton-list-item"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
+    <RouterLink to={path} style={{ textDecoration: 'none' }}>
+      <Flex
+        align="center"
+        p="4"
+        mx="4"
+        borderRadius="lg"
+        role="group"
+        cursor="pointer"
+        bg={isActive ? 'green.400' : 'transparent'}
+        color={isActive ? 'white' : 'inherit'}
+        _hover={{
+          bg: 'green.500',
+          color: 'white',
+        }}
+        {...rest}
+      >
+        {icon && (
+          <Icon
+            mr="4"
+            fontSize="16"
+            as={icon}
+          />
+        )}
+        {children}
+      </Flex>
+    </RouterLink>
   );
 };
+
+const MobileNav = ({ onOpen, ...rest }) => {
+    const { user } = useAuth();
+  return (
+    <Flex
+      ml={{ base: 0, md: 60 }}
+      px={{ base: 4, md: 24 }}
+      height="20"
+      alignItems="center"
+      bg={useColorModeValue('white', 'gray.900')}
+      borderBottomWidth="1px"
+      borderBottomColor={useColorModeValue('gray.200', 'gray.700')}
+      justifyContent="space-between"
+      {...rest}
+    >
+      <IconButton
+        variant="outline"
+        onClick={onOpen}
+        aria-label="open menu"
+        icon={<FaBars />}
+      />
+      <Text fontSize="2xl" ml="8" fontFamily="monospace" fontWeight="bold">
+        Dashboard
+      </Text>
+      <Avatar size="sm" name={user?.display_name} src={user?.images?.[0]?.url} />
+    </Flex>
+  );
+};
+
+const PlaylistCard = ({ playlist }) => (
+  <RouterLink to={`/analyze/playlist/${playlist.id}`}>
+    <Card
+      bg={useColorModeValue('gray.100', 'gray.700')}
+      _hover={{ transform: 'scale(1.05)', shadow: 'lg' }}
+      transition="all 0.2s"
+    >
+      <CardBody>
+        <Image src={playlist.images[0]?.url} alt={playlist.name} borderRadius="lg" />
+        <VStack mt="4" spacing="2" align="start">
+          <Heading size="md">{playlist.name}</Heading>
+          <Text noOfLines={2}>{playlist.description || 'No description'}</Text>
+          <Text fontSize="sm" color="gray.500">{playlist.tracks.total} tracks</Text>
+        </VStack>
+      </CardBody>
+    </Card>
+  </RouterLink>
+);
+
+const TrackItem = ({ item }) => (
+  <Flex align="center" p="2" _hover={{ bg: useColorModeValue('gray.200', 'gray.600') }} borderRadius="md">
+    <Image boxSize="50px" src={item.track.album.images[0]?.url} alt={item.track.name} mr="4" borderRadius="md" />
+    <Box>
+      <Text fontWeight="bold">{item.track.name}</Text>
+      <Text fontSize="sm" color="gray.500">
+        {item.track.artists.map(artist => artist.name).join(', ')}
+      </Text>
+    </Box>
+  </Flex>
+);
 
 const Dashboard = () => {
-  const location = useLocation();
+  const { token, user } = useAuth();
   const [playlists, setPlaylists] = useState([]);
   const [recentTracks, setRecentTracks] = useState([]);
-  const [topTracks, setTopTracks] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalPlaylists: 0,
-    totalTracks: 0,
-    listeningTime: '2.5h',
-    topGenre: 'Indie'
-  });
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
-    // Mock data
-    const mockPlaylists = [
-      {
-        id: "1",
-        name: "Chill Vibes",
-        images: [{ url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60" }],
-        description: "Your relaxing tunes",
-        tracks: { total: 45 }
-      },
-      {
-        id: "2",
-        name: "Workout Mix",
-        images: [{ url: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60" }],
-        description: "Energy boosters",
-        tracks: { total: 32 }
-      },
-      {
-        id: "3",
-        name: "Road Trip",
-        images: [{ url: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG11c2ljfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60" }],
-        description: "Windows down, volume up",
-        tracks: { total: 28 }
-      },
-      {
-        id: "4",
-        name: "Late Night Coding",
-        images: [{ url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" }],
-        description: "Focus & flow state",
-        tracks: { total: 67 }
-      },
-      {
-        id: "5",
-        name: "Sunday Morning",
-        images: [{ url: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" }],
-        description: "Peaceful weekend vibes",
-        tracks: { total: 23 }
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [playlistsRes, recentRes] = await Promise.all([
+          getPlaylists(token),
+          getRecentlyPlayed(token)
+        ]);
+        setPlaylists(playlistsRes.data.items);
+        setRecentTracks(recentRes.data.items);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data", error);
+      } finally {
+        setLoading(false);
       }
-    ];
+    };
 
-    const mockTracks = [
-      {
-        id: "1",
-        name: "Blinding Lights",
-        artists: [{ name: "The Weeknd" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-15T10:30:00Z"
-      },
-      {
-        id: "2",
-        name: "Save Your Tears",
-        artists: [{ name: "The Weeknd" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-15T09:45:00Z"
-      },
-      {
-        id: "3",
-        name: "Levitating",
-        artists: [{ name: "Dua Lipa" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGFsYnVtJTIwY292ZXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-15T08:20:00Z"
-      },
-      {
-        id: "4",
-        name: "As It Was",
-        artists: [{ name: "Harry Styles" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-15T07:55:00Z"
-      }
-    ];
-
-    const mockTopTracks = [
-      {
-        id: "5",
-        name: "Flowers",
-        artists: [{ name: "Miley Cyrus" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-14T10:30:00Z"
-      },
-      {
-        id: "6",
-        name: "Kill Bill",
-        artists: [{ name: "SZA" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-14T09:45:00Z"
-      },
-      {
-        id: "7",
-        name: "Anti-Hero",
-        artists: [{ name: "Taylor Swift" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGFsYnVtJTIwY292ZXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-14T08:20:00Z"
-      },
-      {
-        id: "8",
-        name: "Unholy",
-        artists: [{ name: "Sam Smith" }],
-        album: { images: [{ url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60" }] },
-        played_at: "2024-01-14T07:55:00Z"
-      }
-    ];
-
-    setTimeout(() => {
-      setPlaylists(mockPlaylists);
-      setRecentTracks(mockTracks);
-      setTopTracks(mockTopTracks);
-      setStats({
-        totalPlaylists: mockPlaylists.length,
-        totalTracks: mockTracks.length + mockTopTracks.length,
-        listeningTime: '2.5h',
-        topGenre: 'Indie'
-      });
-      setLoading(false);
-    }, 1500);
-  }, []);
+    if (token) {
+      fetchData();
+    }
+  }, [token]);
 
   if (loading) {
-    return <SkeletonLoader />;
+    return (
+      <Center h="100vh">
+        <Spinner size="xl" />
+      </Center>
+    );
   }
 
   return (
-    <div className="dashboard-layout">
-      <Sidebar activePath={location.pathname} isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-      
-      <div className="main-content">
-        {/* Mobile Header */}
-        <header className="mobile-header">
-          <div className="mobile-logo">
-            <IoIosMusicalNotes className="mobile-logo-icon" />
-            <span>Aurafy</span>
-          </div>
-          <button className="mobile-menu-btn" onClick={() => setIsSidebarOpen(true)} aria-label="Open menu">
-            <FaBars />
-          </button>
-        </header>
+    <Box minH="100vh" bg={useColorModeValue('gray.100', 'gray.800')}>
+      <SidebarContent onClose={() => onClose} display={{ base: 'none', md: 'block' }} />
+      <Drawer
+        isOpen={isOpen}
+        placement="left"
+        onClose={onClose}
+        returnFocusOnClose={false}
+        onOverlayClick={onClose}
+        size="full"
+      >
+        <DrawerOverlay />
+        <DrawerContent>
+          <SidebarContent onClose={onClose} />
+        </DrawerContent>
+      </Drawer>
 
-        {/* Dashboard Header */}
-        <header className="dashboard-header">
-          <div className="header-content">
-            <h1 className="dashboard-title">
-              Welcome back, <span className="highlight">Alex</span>
-            </h1>
-            <p className="dashboard-subtitle">
-              Here's what you've been listening to
-            </p>
-          </div>
+      <MobileNav display={{ base: 'flex', md: 'none' }} onOpen={onOpen} />
 
-          <div className="stats-grid">
-            <StatCard 
-              icon={<FaMusic />}
-              value={stats.totalPlaylists}
-              label="Playlists"
-              trend="+2 this week"
-            />
-            
-            <StatCard 
-              icon={<FaHeadphones />}
-              value={stats.totalTracks}
-              label="Tracks Played"
-            />
-            
-            <StatCard 
-              icon={<FaClock />}
-              value={stats.listeningTime}
-              label="Today"
-            />
+      <Box ml={{ base: 0, md: 60 }} p="8">
+        <Heading mb="4">Welcome, {user?.display_name}</Heading>
+        <Text fontSize="xl" mb="8">Here's your musical world at a glance.</Text>
 
-            <StatCard 
-              icon={<FaHeart />}
-              value={stats.topGenre}
-              label="Top Genre"
-            />
-          </div>
-        </header>
+        <VStack spacing="12" align="stretch">
+          <Box>
+            <Heading size="lg" mb="4">Your Playlists</Heading>
+            <SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing={6}>
+              {playlists.map(p => <PlaylistCard key={p.id} playlist={p} />)}
+            </SimpleGrid>
+          </Box>
 
-        {/* Quick Actions */}
-        <section className="quick-actions">
-          <h2 className="section-title">Quick Actions</h2>
-          <div className="action-cards">
-            <Link to="/analyze/recent" className="action-card featured">
-              <div className="action-icon"><FaPalette /></div>
-              <div className="action-content">
-                <h3>Analyze Listening Aura</h3>
-                <p>Discover the mood of your recent tracks</p>
-              </div>
-              <div className="action-arrow">
-                <FaArrowRight />
-              </div>
-            </Link>
-            
-            <Link to="/generate-mood" className="action-card">
-              <div className="action-icon"><FaRegClock /></div>
-              <div className="action-content">
-                <h3>Listening History</h3>
-                <p>See your recent streaming stats</p>
-              </div>
-              <div className="action-arrow">
-                <FaArrowRight />
-              </div>
-            </Link>
-
-            <Link to="/top-tracks" className="action-card">
-              <div className="action-icon"><FaHeart /></div>
-              <div className="action-content">
-                <h3>Top Tracks</h3>
-                <p>Your most played songs this month</p>
-              </div>
-              <div className="action-arrow">
-                <FaArrowRight />
-              </div>
-            </Link>
-          </div>
-        </section>
-
-        <div className="dashboard-grid">
-          {/* Playlists Section */}
-          <section className="playlists-section">
-            <div className="section-header">
-              <h2 className="section-title">Your Playlists</h2>
-              <Link to="/playlists" className="section-action">
-                View All <FaArrowRight />
-              </Link>
-            </div>
-            
-            <div className="playlist-grid">
-              {playlists.slice(0, 4).map(playlist => (
-                <PlaylistCard key={playlist.id} playlist={playlist} />
-              ))}
-            </div>
-          </section>
-
-          {/* Recently Played Section */}
-          <section className="recent-section">
-            <div className="section-header">
-              <h2 className="section-title">Recently Played</h2>
-              <Link to="/analyze/recent" className="section-action">
-                Analyze All <FaArrowRight />
-              </Link>
-            </div>
-            
-            <div className="tracks-list">
-              {recentTracks.map((track, index) => (
-                <TrackItem key={track.id} track={track} index={index} />
-              ))}
-            </div>
-          </section>
-
-          {/* Top Tracks Section */}
-          <section className="top-section">
-            <div className="section-header">
-              <h2 className="section-title">Top Tracks</h2>
-              <Link to="/top-tracks" className="section-action">
-                View More <FaArrowRight />
-              </Link>
-            </div>
-            
-            <div className="tracks-list">
-              {topTracks.map((track, index) => (
-                <TrackItem key={track.id} track={track} index={index} />
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
+          <Box>
+            <Heading size="lg" mb="4">Recently Played</Heading>
+            <VStack spacing="4" align="stretch">
+              {recentTracks.slice(0, 10).map(item => <TrackItem key={item.played_at} item={item} />)}
+            </VStack>
+          </Box>
+        </VStack>
+      </Box>
+    </Box>
   );
 };
 
 export default Dashboard;
-
-
-
-// // frontend/src/components/Dashboard.js
-// import React, { useState, useEffect } from 'react';
-// import { Link } from 'react-router-dom';
-// import './Dashboard.css';
-
-// const Dashboard = () => {
-//   const [playlists, setPlaylists] = useState([]);
-//   const [recentTracks, setRecentTracks] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const [stats, setStats] = useState({
-//     totalPlaylists: 0,
-//     totalTracks: 0,
-//     listeningTime: '0h'
-//   });
-
-//   useEffect(() => {
-//     // Mock data for demonstration - replace with actual API calls
-//     const mockPlaylists = [
-//       {
-//         id: "1", 
-//         name: "Chill Vibes", 
-//         images: [{url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"}],
-//         description: "Your relaxing tunes",
-//         tracks: { total: 45 }
-//       },
-//       {
-//         id: "2", 
-//         name: "Workout Mix", 
-//         images: [{url: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"}],
-//         description: "Energy boosters",
-//         tracks: { total: 32 }
-//       },
-//       {
-//         id: "3", 
-//         name: "Road Trip", 
-//         images: [{url: "https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTR8fG11c2ljfGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60"}],
-//         description: "Windows down, volume up",
-//         tracks: { total: 28 }
-//       },
-//       {
-//         id: "4", 
-//         name: "Late Night Coding", 
-//         images: [{url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60"}],
-//         description: "Focus & flow state",
-//         tracks: { total: 67 }
-//       },
-//       {
-//         id: "5", 
-//         name: "Sunday Morning", 
-//         images: [{url: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60"}],
-//         description: "Peaceful weekend vibes",
-//         tracks: { total: 23 }
-//       }
-//     ];
-
-//     const mockTracks = [
-//       {
-//         id: "1",
-//         name: "Blinding Lights",
-//         artists: [{name: "The Weeknd"}],
-//         album: {images: [{url: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60"}]},
-//         played_at: "2024-01-15T10:30:00Z"
-//       },
-//       {
-//         id: "2", 
-//         name: "Save Your Tears",
-//         artists: [{name: "The Weeknd"}],
-//         album: {images: [{url: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8YWxidW0lMjBjb3ZlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60"}]},
-//         played_at: "2024-01-15T09:45:00Z"
-//       },
-//       {
-//         id: "3",
-//         name: "Levitating",
-//         artists: [{name: "Dua Lipa"}],
-//         album: {images: [{url: "https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTZ8fGFsYnVtJTIwY292ZXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"}]},
-//         played_at: "2024-01-15T08:20:00Z"
-//       },
-//       {
-//         id: "4",
-//         name: "As It Was",
-//         artists: [{name: "Harry Styles"}],
-//         album: {images: [{url: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bXVzaWN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60"}]},
-//         played_at: "2024-01-15T07:55:00Z"
-//       }
-//     ];
-
-//     // Simulate loading
-//     setTimeout(() => {
-//       setPlaylists(mockPlaylists);
-//       setRecentTracks(mockTracks);
-//       setStats({
-//         totalPlaylists: mockPlaylists.length,
-//         totalTracks: mockTracks.length,
-//         listeningTime: '2.5h'
-//       });
-//       setLoading(false);
-//     }, 1000);
-//   }, []);
-
-//   const formatTime = (dateString) => {
-//     const date = new Date(dateString);
-//     return date.toLocaleTimeString('en-US', { 
-//       hour: 'numeric', 
-//       minute: '2-digit',
-//       hour12: true 
-//     });
-//   };
-
-//   if (loading) {
-//     return (
-//       <div className="dashboard-loading">
-//         <div className="loading-spinner">
-//           <div className="spinner"></div>
-//           <p>Loading your musical universe...</p>
-//         </div>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="dashboard">
-//       <div className="dashboard-container">
-//         {/* Header Section */}
-//         <header className="dashboard-header">
-//           <div className="header-content">
-//             <h1 className="dashboard-title">
-//               Welcome back to your <span className="highlight">Aurafy</span> world
-//             </h1>
-//             <p className="dashboard-subtitle">
-//               Discover the hilarious moods and hidden auras in your music
-//             </p>
-//           </div>
-          
-//           <div className="stats-grid">
-//             <div className="stat-card">
-//               <div className="stat-icon">🎵</div>
-//               <div className="stat-info">
-//                 <span className="stat-number">{stats.totalPlaylists}</span>
-//                 <span className="stat-label">Playlists</span>
-//               </div>
-//             </div>
-//             <div className="stat-card">
-//               <div className="stat-icon">🎧</div>
-//               <div className="stat-info">
-//                 <span className="stat-number">{stats.totalTracks}</span>
-//                 <span className="stat-label">Recent Tracks</span>
-//               </div>
-//             </div>
-//             <div className="stat-card">
-//               <div className="stat-icon">⏰</div>
-//               <div className="stat-info">
-//                 <span className="stat-number">{stats.listeningTime}</span>
-//                 <span className="stat-label">Today</span>
-//               </div>
-//             </div>
-//           </div>
-//         </header>
-
-//         {/* Quick Actions */}
-//         <section className="quick-actions">
-//           <h2 className="section-title">Quick Analysis</h2>
-//           <div className="action-cards">
-//             <Link to="/analyze/recent" className="action-card featured">
-//               <div className="action-icon">✨</div>
-//               <div className="action-content">
-//                 <h3>Analyze Recent Aura</h3>
-//                 <p>Discover the mood of your latest listening session</p>
-//               </div>
-//               <div className="action-arrow">→</div>
-//             </Link>
-//             <div className="action-card">
-//               <div className="action-icon">🎯</div>
-//               <div className="action-content">
-//                 <h3>Mood Generator</h3>
-//                 <p>Create a playlist based on your current vibe</p>
-//               </div>
-//               <div className="action-arrow">→</div>
-//             </div>
-//           </div>
-//         </section>
-
-//         {/* Playlists Section */}
-//         <section className="playlists-section">
-//           <div className="section-header">
-//             <h2 className="section-title">Your Playlists</h2>
-//             <p className="section-subtitle">Click any playlist to reveal its hidden aura</p>
-//           </div>
-          
-//           <div className="playlist-grid">
-//             {playlists.map(playlist => (
-//               <Link 
-//                 to={`/analyze/playlist/${playlist.id}`} 
-//                 key={playlist.id} 
-//                 className="playlist-card"
-//               >
-//                 <div className="playlist-image">
-//                   <img 
-//                     src={playlist.images[0]?.url} 
-//                     alt={playlist.name}
-//                     loading="lazy"
-//                   />
-//                   <div className="playlist-overlay">
-//                     <div className="play-button">
-//                       <span>▶</span>
-//                     </div>
-//                   </div>
-//                 </div>
-                
-//                 <div className="playlist-info">
-//                   <h3 className="playlist-name">{playlist.name}</h3>
-//                   <p className="playlist-description">{playlist.description}</p>
-//                   <span className="playlist-tracks">{playlist.tracks.total} tracks</span>
-//                 </div>
-//               </Link>
-//             ))}
-//           </div>
-//         </section>
-
-//         {/* Recent Tracks Section */}
-//         <section className="recent-section">
-//           <div className="section-header">
-//             <h2 className="section-title">Recently Played</h2>
-//             <Link to="/analyze/recent" className="section-action">
-//               Analyze All Recent →
-//             </Link>
-//           </div>
-          
-//           <div className="tracks-list">
-//             {recentTracks.map((track, index) => (
-//               <div key={track.id} className="track-item">
-//                 <div className="track-number">
-//                   {index + 1}
-//                 </div>
-                
-//                 <div className="track-image">
-//                   <img 
-//                     src={track.album.images[0]?.url} 
-//                     alt={track.name}
-//                     loading="lazy"
-//                   />
-//                 </div>
-                
-//                 <div className="track-info">
-//                   <h4 className="track-name">{track.name}</h4>
-//                   <p className="track-artist">
-//                     {track.artists.map(artist => artist.name).join(', ')}
-//                   </p>
-//                 </div>
-                
-//                 <div className="track-time">
-//                   {formatTime(track.played_at)}
-//                 </div>
-                
-//                 <button className="track-analyze-btn" title="Quick analyze">
-//                   <span>✨</span>
-//                 </button>
-//               </div>
-//             ))}
-//           </div>
-//         </section>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Dashboard;
