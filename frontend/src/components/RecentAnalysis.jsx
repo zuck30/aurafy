@@ -20,13 +20,28 @@ import { useAuth } from '../App';
 
 const FeatureProgress = ({ label, value, color }) => (
   <Box>
-    <Text mb="1" textTransform="capitalize" fontWeight="bold">{label}</Text>
-    <Progress 
-      value={value * 100} 
-      colorScheme={color} 
-      size="lg" 
-      borderRadius="md" 
-      bg={{ base: 'gray.200', _dark: 'gray.600' }} 
+    <Text
+      mb="2"
+      textTransform="capitalize"
+      fontWeight="700"
+      color="white"
+      fontSize={{ base: 'sm', md: 'md' }}
+      fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+    >
+      {label}
+    </Text>
+    <Progress
+      value={value * 100}
+      colorScheme={color}
+      size="lg"
+      borderRadius="md"
+      bg="rgba(255, 255, 255, 0.1)"
+      sx={{
+        '& > div': {
+          transition: 'width 0.5s ease-in-out',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+        },
+      }}
     />
   </Box>
 );
@@ -57,15 +72,19 @@ const RecentAnalysis = () => {
     fetchAnalysis();
   }, [token]);
 
-  const bgColor = { base: 'gray.50', _dark: 'gray.900' };
-  const cardBgColor = { base: 'white', _dark: 'gray.800' };
-
   if (loading) {
     return (
-      <Center h="100vh" bg={bgColor}>
+      <Center
+        h="100vh"
+        bg="rgba(18, 18, 18, 0.95)"
+        backdropFilter="blur(12px)"
+        fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      >
         <VStack spacing={4}>
-          <Spinner size="xl" color="green.400" />
-          <Text>Analyzing your recent tracks...</Text>
+          <Spinner size="xl" color="#1db954" />
+          <Text color="white" fontWeight="700" fontSize={{ base: 'md', md: 'lg' }}>
+            Analyzing your recent tracks...
+          </Text>
         </VStack>
       </Center>
     );
@@ -73,15 +92,47 @@ const RecentAnalysis = () => {
 
   if (error || !analysis) {
     return (
-      <Center h="100vh" bg={bgColor}>
-        <VStack>
-          <Heading>Analysis Failed</Heading>
-          <Text color="red.400" mt={4}>{error}</Text>
-          <Button as={RouterLink} to="/" leftIcon={<Icon as={FaArrowLeft} />} mt={8}>
+      <Center
+        h="100vh"
+        bg="rgba(18, 18, 18, 0.95)"
+        backdropFilter="blur(12px)"
+        fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      >
+        <VStack spacing={6}>
+          <Heading
+            size={{ base: 'lg', md: 'xl' }}
+            fontWeight="900"
+            color="white"
+            letterSpacing="-0.5px"
+          >
+            Analysis Failed
+          </Heading>
+          <Text color="#ff4d4f" fontSize={{ base: 'sm', md: 'md' }} fontWeight="700">
+            {error}
+          </Text>
+          <Button
+            as={RouterLink}
+            to="/"
+            leftIcon={<Icon as={FaArrowLeft} />}
+            size="md"
+            bg="#1db954"
+            color="white"
+            borderRadius="full"
+            fontWeight="700"
+            letterSpacing="0.5px"
+            boxShadow="0 4px 15px rgba(29, 185, 84, 0.3)"
+            _hover={{
+              bg: '#1ed760',
+              transform: 'translateY(-2px)',
+              boxShadow: '0 6px 20px rgba(29, 185, 84, 0.4)',
+            }}
+            _active={{ transform: 'translateY(0)' }}
+            transition="all 0.3s ease"
+          >
             Back to Dashboard
           </Button>
         </VStack>
-      </Center> 
+      </Center>
     );
   }
 
@@ -89,39 +140,178 @@ const RecentAnalysis = () => {
   const { aura, avg_features } = analysisResult;
 
   return (
-    <Box bg={bgColor} minH="100vh" p={{ base: 4, md: 8 }}>
-      <Button as={RouterLink} to="/" leftIcon={<Icon as={FaArrowLeft} />} mb={8} variant="outline">
+    <Box
+      bg="rgba(18, 18, 18, 0.95)"
+      minH="100vh"
+      p={{ base: 4, md: 6 }}
+      fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      color="white"
+      backdropFilter="blur(12px)"
+    >
+      <Button
+        as={RouterLink}
+        to="/"
+        leftIcon={<Icon as={FaArrowLeft} />}
+        mb={{ base: 6, md: 8 }}
+        size="md"
+        bg="#1db954"
+        color="white"
+        borderRadius="full"
+        fontWeight="700"
+        letterSpacing="0.5px"
+        boxShadow="0 4px 15px rgba(29, 185, 84, 0.3)"
+        _hover={{
+          bg: '#1ed760',
+          transform: 'translateY(-2px)',
+          boxShadow: '0 6px 20px rgba(29, 185, 84, 0.4)',
+        }}
+        _active={{ transform: 'translateY(0)' }}
+        transition="all 0.3s ease"
+      >
         Back to Dashboard
       </Button>
-      <Flex direction={{ base: 'column', lg: 'row' }} gap={8}>
+      <Flex
+        direction={{ base: 'column', lg: 'row' }}
+        gap={{ base: 4, md: 6 }}
+        maxW="1400px"
+        mx="auto"
+      >
         {/* Left side: Aura */}
-        <VStack flex="1" spacing={6} align="stretch">
-           <Card bg={cardBgColor} shadow="lg">
-            <CardBody>
-                <Heading size="lg">Analysis of your Recently Played Tracks</Heading>
+        <VStack flex="1" spacing={{ base: 4, md: 6 }} align="stretch">
+          <Card
+            bg="rgba(40, 40, 40, 0.9)"
+            borderRadius="lg"
+            boxShadow="0 4px 15px rgba(0, 0, 0, 0.3)"
+            border="1px solid"
+            borderColor="whiteAlpha.200"
+            _hover={{
+              transform: 'translateY(-4px)',
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
+            }}
+            transition="all 0.3s ease"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              bgGradient: 'linear(to-r, transparent, #1db954, transparent)',
+            }}
+          >
+            <CardBody p={{ base: 4, md: 6 }}>
+              <Heading
+                size={{ base: 'md', md: 'lg' }}
+                fontWeight="900"
+                letterSpacing="-0.5px"
+              >
+                Analysis of Your Recently Played Tracks
+              </Heading>
             </CardBody>
           </Card>
-          <Card bg={aura.color} color="white" p={6} shadow="2xl">
-            <Heading size="md" mb={2} opacity="0.8">Your Recent Aura Is...</Heading>
-            <Heading size="2xl" mb={4}>{aura.name}</Heading>
-            <Text fontSize="lg">{aura.description}</Text>
+          <Card
+            bg={aura.color}
+            color="white"
+            p={{ base: 4, md: 6 }}
+            borderRadius="lg"
+            boxShadow="0 4px 15px rgba(0, 0, 0, 0.3)"
+            border="1px solid"
+            borderColor="whiteAlpha.200"
+            _hover={{
+              transform: 'translateY(-4px)',
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
+            }}
+            transition="all 0.3s ease"
+            position="relative"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              bgGradient: 'linear(to-r, transparent, #1db954, transparent)',
+            }}
+          >
+            <CardBody>
+              <Heading
+                size="md"
+                mb={2}
+                opacity="0.8"
+                fontWeight="700"
+                letterSpacing="-0.5px"
+              >
+                Your Recent Aura Is...
+              </Heading>
+              <Heading
+                size={{ base: 'xl', md: '2xl' }}
+                mb={4}
+                fontWeight="900"
+                letterSpacing="-1px"
+              >
+                {aura.name}
+              </Heading>
+              <Text
+                fontSize={{ base: 'sm', md: 'lg' }}
+                fontWeight="700"
+                lineHeight="1.6"
+              >
+                {aura.description}
+              </Text>
+            </CardBody>
           </Card>
         </VStack>
 
         {/* Right side: Audio Features */}
-        <VStack flex="1" spacing={6} align="stretch">
-          <Card bg={cardBgColor} p={6} shadow="lg">
-            <Heading size="lg" mb={6}>Average Audio Features</Heading>
-            {avg_features && Object.keys(avg_features).length > 0 ? (
-              <VStack spacing={5} align="stretch">
-                <FeatureProgress label="Danceability" value={avg_features.danceability} color="pink" />
-                <FeatureProgress label="Energy" value={avg_features.energy} color="yellow" />
-                <FeatureProgress label="Positivity" value={avg_features.valence} color="orange" />
-                <FeatureProgress label="Acousticness" value={avg_features.acousticness} color="teal" />
-              </VStack>
-            ) : (
-              <Text>Not enough data to display audio features.</Text>
-            )}
+        <VStack flex="1" spacing={{ base: 4, md: 6 }} align="stretch">
+          <Card
+            bg="rgba(40, 40, 40, 0.9)"
+            p={{ base: 4, md: 6 }}
+            borderRadius="lg"
+            boxShadow="0 4px 15px rgba(0, 0, 0, 0.3)"
+            border="1px solid"
+            borderColor="whiteAlpha.200"
+            _hover={{
+              transform: 'translateY(-4px)',
+              boxShadow: '0 6px 20px rgba(0, 0, 0, 0.4)',
+            }}
+            transition="all 0.3s ease"
+            _before={{
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '2px',
+              bgGradient: 'linear(to-r, transparent, #1db954, transparent)',
+            }}
+          >
+            <CardBody>
+              <Heading
+                size={{ base: 'md', md: 'lg' }}
+                mb={6}
+                fontWeight="900"
+                letterSpacing="-0.5px"
+              >
+                Average Audio Features
+              </Heading>
+              {avg_features && Object.keys(avg_features).length > 0 ? (
+                <VStack spacing={{ base: 4, md: 5 }} align="stretch">
+                  <FeatureProgress label="Danceability" value={avg_features.danceability} color="pink" />
+                  <FeatureProgress label="Energy" value={avg_features.energy} color="yellow" />
+                  <FeatureProgress label="Positivity" value={avg_features.valence} color="orange" />
+                  <FeatureProgress label="Acousticness" value={avg_features.acousticness} color="teal" />
+                </VStack>
+              ) : (
+                <Text
+                  fontSize={{ base: 'sm', md: 'md' }}
+                  color="gray.300"
+                  fontWeight="700"
+                >
+                  Not enough data to display audio features.
+                </Text>
+              )}
+            </CardBody>
           </Card>
         </VStack>
       </Flex>
