@@ -97,6 +97,11 @@
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+ ### Aurafy overview
+
+![Screenshot](./screenshots/login.png)
+![Screenshot](./screenshots/auth.png)
+
 <h2>🎨 Example Auras</h2>
 
 - **The Pogo-Sticking Toddler**: High energy + high danceability
