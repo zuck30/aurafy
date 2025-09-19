@@ -47,7 +47,7 @@
 
 ![Spotify API](https://img.shields.io/badge/Spotify-API-brightgreen?style=for-the-badge&logo=spotify)
 
-<h2>🚀 Quick Start</h2>
+<h2> Quick Start</h2>
 
 ### Prerequisites
 
@@ -98,11 +98,14 @@
    Navigate to [http://localhost:3000](http://localhost:3000)
 
  ### Aurafy overview
+<h2>The Login page</h2>
 
 ![Screenshot](./screenshots/login.png)
+<h2>The spotify authentication page.</h2>
+
 ![Screenshot](./screenshots/auth.png)
 
-<h2>🎨 Example Auras</h2>
+<h2> Example Auras</h2>
 
 - **The Pogo-Sticking Toddler**: High energy + high danceability
 - **The Contemplative Emo Poet**: Low valence + high acousticness  
@@ -111,7 +114,7 @@
 - **The Moody Vampire**: Dark and atmospheric
 - **The Chill Beach Bum**: Acoustic, positive, and relaxed
 
-<h2>📱 Responsive Design</h2>
+<h2> Responsive Design</h2>
 
 The application is optimized for all device sizes:
 - Mobile phones (320px and up)
