@@ -105,6 +105,14 @@
 
 ![Screenshot](./screenshots/auth.png)
 
+<h2>Main dashboard</h2>
+
+![Screenshot](./screenshots/dashboard.png)
+
+<h2>Recently played.</h2>
+
+![Screenshot](./screenshots/recently-played.png)
+
 <h2> Example Auras</h2>
 
 - **The Pogo-Sticking Toddler**: High energy + high danceability
