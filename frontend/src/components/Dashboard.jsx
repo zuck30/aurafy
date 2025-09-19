@@ -197,9 +197,6 @@ const MobileNav = ({ onOpen, ...rest }) => {
       />
       <Flex align="center">
         <Icon as={FaSpotify} fontSize="xl" color="#1DB954" mr="2" />
-        <Text fontSize="lg" fontWeight="900" letterSpacing="-0.5px">
-          Dashboard
-        </Text>
       </Flex>
       <Avatar size="sm" name={user?.display_name} src={user?.images?.[0]?.url} />
     </Flex>
@@ -585,7 +582,7 @@ const Dashboard = () => {
         <VStack spacing="4">
           <Spinner size="xl" color="#1db954" thickness="4px" speed="0.65s" />
           <Text color="white" fontWeight="bold" fontSize="lg">
-            Curating your aura...
+            Don't carpe diem bro.
           </Text>
         </VStack>
       </Center>
