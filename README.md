@@ -72,7 +72,7 @@
 3. **Set up the frontend**
    ```bash
    cd ../frontend
-   npm install
+   npm install 
    npm install @chakra-ui/react@2.4.9
    ```
 
