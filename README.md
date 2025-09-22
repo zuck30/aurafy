@@ -130,12 +130,6 @@ The application is optimized for all device sizes:
 - Laptops (1024px and up)
 - Large screens (1200px and up)
 
-<h2>Profile Links</h2>
-<p>
-    <a href="https://github.com/zuck30"><img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" alt="" srcset=""></a>
-    <a href="mailto:mwalyangashadrack@gmail.com"><img src="https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="" srcset=""></a>
-</p>
-
 <h2> Support the Project</h2>
 <p>
     <a href="https://www.buymeacoffee.com/zuck30" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" height="30px" ></a>
