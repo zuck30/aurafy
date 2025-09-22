@@ -113,9 +113,10 @@
 
 ![Screenshot](./screenshots/recently-played.png)
 
-<h2> Example Auras</h2>
+<h2> TODO: </h2>
+<h3>Write better algorithm for the auras.</h3>
 
-- **The Pogo-Sticking Toddler**: High energy + high danceability
+- **The Pogo Sticking Toddler**: High energy + high danceability
 - **The Contemplative Emo Poet**: Low valence + high acousticness  
 - **The Anxious Hummingbird**: High tempo + low energy
 - **The Euphoric Clubber**: High energy + high positivity
