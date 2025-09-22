@@ -1,13 +1,13 @@
 # Aurafy.
 
 <div align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=30&duration=4000&pause=1000&color=3cec5&center=true&vCenter=true&width=500&height=70&lines=Discover+Your+Musical+Aura;Analyze+Your+Playlists;Get+Humorous+Insights;Powered+by+Spotify+API" alt="Typing Animation" />
+  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=30&duration=4000&pause=1000&color=3cec5&center=true&vCenter=true&width=500&height=70&lines=discover+your+musical+aura;analyze+your+playlists;get+algorithimic+insights;powered+by+Spotify+API" alt="Typing Animation" />
 </div>
 
 
 ![Aurafy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aurafy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
 
-<p align="center">Aurafy is web application that analyzes your music listening habits and assigns humorous "auras" based on audio features. Discover if you're a "Pogo-Sticking Toddler" or a "Contemplative Emo Poet"!</p>
+<p align="center">Aurafy is web application that analyzes your music listening habits and assigns humorous "auras" based on audio features.</p>
 
 ![Aurafy your playlist](https://img.shields.io/badge/React-18.2.0-blue) ![FastAPI](https://img.shields.io/badge/FastAPI-0.68.0-green) ![Spotify API](https://img.shields.io/badge/Spotify-API-brightgreen)
 
