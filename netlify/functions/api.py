@@ -1,4 +1,4 @@
-# netlify/functions/api/api.py
+# netlify/functions/api.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -17,7 +17,7 @@ class AudioFeaturesRequest(BaseModel):
 class AuraCalculationRequest(BaseModel):
     features_list: List[Dict]
 
-app = FastAPI(title="Aurafy Your Playlist API")
+app = FastAPI(title="Aurafy Your Playlist API", root_path="/api")
 
 # In production, set this to your Netlify app's URL
 PRODUCTION_URL = os.environ.get("https://aurafai.netlify.app")
