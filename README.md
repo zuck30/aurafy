@@ -60,15 +60,13 @@
 
 2. **Set up the backend**
    ```bash
-   cd backend
    pip install -r requirements.txt
    ```
 
 3. **Set up the frontend**
    ```bash
-   cd ../frontend
+   cd frontend
    npm install 
-   npm install @chakra-ui/react@2.4.9
    ```
 
 4. **Configure Spotify API for Local Development**
@@ -78,44 +76,40 @@
    - For local development, you can leave the default `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` in `backend/main.py` or replace them with your own.
 
 5. **Run the application**
-   - Start the backend:
+   - Start the development server:
      ```bash
-     cd backend
-     python main.py
+     netlify dev
      ```
-   - Start the frontend (in a new terminal):
-     ```bash
-     cd frontend
-     npm start
-     ```
+   This will start both the frontend and the backend services.
 
 6. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+   Navigate to the URL provided by `netlify dev` (usually [http://localhost:8888](http://localhost:8888)).
 
-## Deploying to Vercel
+## Deploying to Netlify
 
-This project is configured for easy deployment to Vercel.
+This project is configured for easy deployment to Netlify.
 
 1.  **Fork this repository.**
 
-2.  **Create a new project on Vercel** and connect it to your forked repository.
+2.  **Create a new project on Netlify** and connect it to your forked repository.
 
-3.  **Configure Environment Variables:** In your Vercel project settings, add the following environment variables:
+3.  **Configure Environment Variables:** In your Netlify project settings, add the following environment variables:
 
-    *   `PRODUCTION_URL`: The full URL of your Vercel deployment (e.g., `https://your-app-name.vercel.app`).
-    *   `FRONTEND_URL`: The same URL as `PRODUCTION_URL`.
+    *   `URL`: The full URL of your Netlify deployment (e.g., `https://your-app-name.netlify.app`). This is a built-in Netlify environment variable, so you just need to reference it.
+    *   `FRONTEND_URL`: The same URL as `URL`.
     *   `SPOTIFY_CLIENT_ID`: Your Spotify application's client ID.
     *   `SPOTIFY_CLIENT_SECRET`: Your Spotify application's client secret.
+    *   `PYTHON_VERSION`: Set this to the Python version you want to use, e.g., `3.8`.
 
 4.  **Update Spotify Redirect URI:** In your Spotify application settings, add the following redirect URI:
 
     ```
-    <YOUR_PRODUCTION_URL>/api/callback
+    <YOUR_NETLIFY_URL>/api/callback
     ```
 
-    Replace `<YOUR_PRODUCTION_URL>` with your Vercel deployment URL.
+    Replace `<YOUR_NETLIFY_URL>` with your Netlify deployment URL.
 
-5.  **Deploy!** Vercel will automatically build and deploy your application.
+5.  **Deploy!** Netlify will automatically build and deploy your application using the `netlify.toml` configuration.
 
  ### Aurafy overview
 <h2>The Login page</h2>
