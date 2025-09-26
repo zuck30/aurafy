@@ -92,6 +92,31 @@
 6. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
+## Deploying to Vercel
+
+This project is configured for easy deployment to Vercel.
+
+1.  **Fork this repository.**
+
+2.  **Create a new project on Vercel** and connect it to your forked repository.
+
+3.  **Configure Environment Variables:** In your Vercel project settings, add the following environment variables:
+
+    *   `PRODUCTION_URL`: The full URL of your Vercel deployment (e.g., `https://your-app-name.vercel.app`).
+    *   `FRONTEND_URL`: The same URL as `PRODUCTION_URL`.
+    *   `SPOTIFY_CLIENT_ID`: Your Spotify application's client ID.
+    *   `SPOTIFY_CLIENT_SECRET`: Your Spotify application's client secret.
+
+4.  **Update Spotify Redirect URI:** In your Spotify application settings, add the following redirect URI:
+
+    ```
+    <YOUR_PRODUCTION_URL>/api/callback
+    ```
+
+    Replace `<YOUR_PRODUCTION_URL>` with your Vercel deployment URL.
+
+5.  **Deploy!** Vercel will automatically build and deploy your application.
+
  ### Aurafy overview
 <h2>The Login page</h2>
 
