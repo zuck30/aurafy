@@ -19,12 +19,13 @@ class AuraCalculationRequest(BaseModel):
 
 app = FastAPI(title="Aurafy Your Playlist API", root_path="/api")
 
-# In production, set this to your Netlify app's URL
-PRODUCTION_URL = os.environ.get("https://aurafai.netlify.app")
+# Netlify sets a `URL` environment variable with the site's primary URL.
+# We use this to dynamically configure the app for production.
+PRODUCTION_URL = os.environ.get("URL")
 
 # CORS middleware to allow frontend connection
 origins = [
-    "https://aurafai.netlify.app",  # this has to be React app URL for production 
+    "http://localhost:3000",  # Default for local React dev
 ]
 if PRODUCTION_URL:
     origins.append(PRODUCTION_URL)
@@ -43,7 +44,7 @@ SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "449877bbefaa407
 
 if PRODUCTION_URL:
     # Use the production URL for the Spotify redirect URI
-    SPOTIFY_REDIRECT_URI = "https://aurafai.netlify.app/api/callback"
+    SPOTIFY_REDIRECT_URI = f"{PRODUCTION_URL}/api/callback"
 else:
     # Use the local URL for development
     SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
@@ -128,8 +129,8 @@ async def callback(code: str):
     access_token = token_info.get("access_token")
     refresh_token = token_info.get("refresh_token")
 
-    # Redirect to frontend - make sure this matches your frontend URL
-    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+    # Redirect to frontend, using the production URL if available.
+    frontend_url = PRODUCTION_URL or "http://localhost:3000"
     redirect_url = f"{frontend_url}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
