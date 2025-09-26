@@ -17,7 +17,7 @@ class AudioFeaturesRequest(BaseModel):
 class AuraCalculationRequest(BaseModel):
     features_list: List[Dict]
 
-app = FastAPI(title="Aurafy Your Playlist API")
+app = FastAPI(title="Aurafy Your Playlist API", root_path="/api")
 
 # In production, set this to your Netlify app's URL
 PRODUCTION_URL = os.environ.get("URL")
@@ -97,7 +97,7 @@ AURAS = [
 async def root():
     return {"message": "Welcome to Aura-fy Your Playlist API"}
 
-@app.get("/login")
+@app.get("/api/login")
 async def login():
     scope = "user-read-private user-read-email user-read-recently-played playlist-read-private playlist-read-collaborative user-library-read"
     params = {
@@ -109,7 +109,7 @@ async def login():
     }
     auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url=auth_url)
-@app.get("/callback")
+@app.get("/api/callback")
 async def callback(code: str):
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
@@ -133,7 +133,7 @@ async def callback(code: str):
     redirect_url = f"{frontend_url}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
-@app.get("/refresh_token")
+@app.get("/api/refresh_token")
 async def refresh_token(refresh_token: str):
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
@@ -154,7 +154,7 @@ async def refresh_token(refresh_token: str):
 def get_spotify_headers(access_token: str):
     return {"Authorization": f"Bearer {access_token}"}
 
-@app.get("/me")
+@app.get("/api/me")
 async def get_me(access_token: str):
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
@@ -162,7 +162,7 @@ async def get_me(access_token: str):
         raise HTTPException(status_code=response.status_code, detail=response.json())
     return response.json()
 
-@app.get("/playlists")
+@app.get("/api/playlists")
 async def get_playlists(access_token: str):
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/playlists", headers=headers)
@@ -170,7 +170,7 @@ async def get_playlists(access_token: str):
         raise HTTPException(status_code=response.status_code, detail=response.json())
     return response.json()
 
-@app.get("/recently-played")
+@app.get("/api/recently-played")
 async def get_recently_played(access_token: str):
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/player/recently-played?limit=50", headers=headers)
@@ -178,7 +178,7 @@ async def get_recently_played(access_token: str):
         raise HTTPException(status_code=response.status_code, detail=response.json())
     return response.json()
 
-@app.get("/playlist/{playlist_id}")
+@app.get("/api/playlist/{playlist_id}")
 async def get_playlist(playlist_id: str, access_token: str):
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/playlists/{playlist_id}", headers=headers)
@@ -251,7 +251,7 @@ def calculate_aura(features_list: List[Dict]):
         "avg_features": avg_features,
     }
 
-@app.get("/analyze/playlist/{playlist_id}")
+@app.get("/api/analyze/playlist/{playlist_id}")
 async def analyze_playlist(playlist_id: str, access_token: str):
     track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
     try:
@@ -267,7 +267,7 @@ async def analyze_playlist(playlist_id: str, access_token: str):
         "details": playlist_details
     }
 
-@app.get("/analyze/recent")
+@app.get("/api/analyze/recent")
 async def analyze_recent(access_token: str):
     recent_data = await get_recently_played(access_token)
     track_ids = []
@@ -284,11 +284,11 @@ async def analyze_recent(access_token: str):
         "details": {"name": "Recently Played", "tracks": recent_data}
     }
 
-@app.post("/audio_features")
+@app.post("/api/audio_features")
 async def get_audio_features_endpoint(request: AudioFeaturesRequest):
     return await get_audio_features(request.track_ids, request.access_token)
 
-@app.post("/calculate_aura")
+@app.post("/api/calculate_aura")
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
 
