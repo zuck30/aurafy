@@ -8,7 +8,7 @@ from typing import List, Dict
 import base64
 from pydantic import BaseModel
 import os
-from serverless_asgi import AsgiHandler
+from mangum import Mangum
 
 class AudioFeaturesRequest(BaseModel):
     track_ids: List[str]
@@ -292,4 +292,4 @@ async def get_audio_features_endpoint(request: AudioFeaturesRequest):
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
 
-handler = AsgiHandler(app)
+handler = Mangum(app)
