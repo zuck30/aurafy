@@ -71,11 +71,11 @@
    npm install @chakra-ui/react@2.4.9
    ```
 
-4. **Configure Spotify API**
+4. **Configure Spotify API for Local Development**
    - Create a Spotify Developer account at [https://developer.spotify.com/](https://developer.spotify.com/)
-   - Register a new application
-   - Add `http://localhost:3000/callback` as a redirect URI in your app settings
-   - Update `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` in `backend/main.py`
+   - Register a new application.
+   - In the app settings, add `http://127.0.0.1:8000/api/callback` as a redirect URI.
+   - For local development, you can leave the default `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` in `backend/main.py` or replace them with your own.
 
 5. **Run the application**
    - Start the backend:
