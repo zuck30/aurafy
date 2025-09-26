@@ -7,6 +7,7 @@ import urllib.parse
 from typing import List, Dict
 import base64
 from pydantic import BaseModel
+import os
 
 class AudioFeaturesRequest(BaseModel):
     track_ids: List[str]
@@ -17,19 +18,34 @@ class AuraCalculationRequest(BaseModel):
 
 app = FastAPI(title="Aurafy Your Playlist API")
 
+# In production, set this to your Vercel app's URL (e.g., https://my-awesome-app.vercel.app)
+PRODUCTION_URL = os.environ.get("PRODUCTION_URL")
+
 # CORS middleware to allow frontend connection
+origins = [
+    "http://localhost:3000",  # React app URL for local development
+]
+if PRODUCTION_URL:
+    origins.append(PRODUCTION_URL)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app URL
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # Spotify API credentials
-SPOTIFY_CLIENT_ID = "85a4b164d555499a84c0d16725bad0fa"
-SPOTIFY_CLIENT_SECRET = "449877bbefaa407cae497994af27658b"
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"  # Changed from localhost to 127.0.0.1
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "85a4b164d555499a84c0d16725bad0fa")
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "449877bbefaa407cae497994af27658b")
+
+if PRODUCTION_URL:
+    # Use the production URL for the Spotify redirect URI
+    SPOTIFY_REDIRECT_URI = f"{PRODUCTION_URL}/api/callback"
+else:
+    # Use the local URL for development
+    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -112,7 +128,8 @@ async def callback(code: str):
     refresh_token = token_info.get("refresh_token")
 
     # Redirect to frontend - make sure this matches your frontend URL
-    redirect_url = f"http://localhost:3000/#access_token={access_token}&refresh_token={refresh_token}"
+    frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
+    redirect_url = f"{frontend_url}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
 @app.get("/api/refresh_token")

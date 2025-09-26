@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: '/api',
 });
 
 // Function to refresh the access token
@@ -11,7 +11,7 @@ const refreshToken = async () => {
     throw new Error('No refresh token available');
   }
   // Use a direct axios call to avoid interceptor loop
-  const response = await axios.get(`http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`);
+  const response = await axios.get(`/api/refresh_token?refresh_token=${refreshToken}`);
   const { access_token } = response.data;
   localStorage.setItem('token', access_token);
   return access_token;
