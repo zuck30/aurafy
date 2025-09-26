@@ -1,4 +1,4 @@
-# backend/main.py
+# netlify/functions/api/main.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -8,6 +8,7 @@ from typing import List, Dict
 import base64
 from pydantic import BaseModel
 import os
+from serverless_asgi import AsgiHandler
 
 class AudioFeaturesRequest(BaseModel):
     track_ids: List[str]
@@ -18,8 +19,8 @@ class AuraCalculationRequest(BaseModel):
 
 app = FastAPI(title="Aurafy Your Playlist API")
 
-# In production, set this to your Vercel app's URL (e.g., https://my-awesome-app.vercel.app)
-PRODUCTION_URL = os.environ.get("PRODUCTION_URL")
+# In production, set this to your Netlify app's URL
+PRODUCTION_URL = os.environ.get("URL")
 
 # CORS middleware to allow frontend connection
 origins = [
@@ -45,7 +46,7 @@ if PRODUCTION_URL:
     SPOTIFY_REDIRECT_URI = f"{PRODUCTION_URL}/api/callback"
 else:
     # Use the local URL for development
-    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
+    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -291,6 +292,4 @@ async def get_audio_features_endpoint(request: AudioFeaturesRequest):
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+handler = AsgiHandler(app)
