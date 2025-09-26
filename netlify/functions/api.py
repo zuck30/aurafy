@@ -1,4 +1,3 @@
-# netlify/functions/api.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -8,7 +7,6 @@ from typing import List, Dict
 import base64
 from pydantic import BaseModel
 import os
-from mangum import Mangum
 
 class AudioFeaturesRequest(BaseModel):
     track_ids: List[str]
@@ -17,18 +15,14 @@ class AudioFeaturesRequest(BaseModel):
 class AuraCalculationRequest(BaseModel):
     features_list: List[Dict]
 
-app = FastAPI(title="Aurafy Your Playlist API", root_path="/api")
+# Initialize FastAPI
+app = FastAPI(title="Aurafy Your Playlist API")
 
-# Netlify sets a `URL` environment variable with the site's primary URL.
-# We use this to dynamically configure the app for production.
-PRODUCTION_URL = os.environ.get("URL")
-
-# CORS middleware to allow frontend connection
+# CORS configuration
 origins = [
-    "http://localhost:3000",  # Default for local React dev
+    "http://localhost:3000",
+    "https://aurafai.netlify.app"
 ]
-if PRODUCTION_URL:
-    origins.append(PRODUCTION_URL)
 
 app.add_middleware(
     CORSMiddleware,
@@ -38,16 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Spotify API credentials
-SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID", "85a4b164d555499a84c0d16725bad0fa")
-SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "449877bbefaa407cae497994af27658b")
-
-if PRODUCTION_URL:
-    # Use the production URL for the Spotify redirect URI
-    SPOTIFY_REDIRECT_URI = f"{PRODUCTION_URL}/api/callback"
-else:
-    # Use the local URL for development
-    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
+# Spotify configuration - use environment variables
+SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
+SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
+SPOTIFY_REDIRECT_URI = "https://aurafai.netlify.app/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -60,37 +48,37 @@ AURAS = [
         "name": "High-Energy Dance Party",
         "description": "This playlist is a non-stop dance party! Perfect for a workout or a night out.",
         "conditions": lambda f: f["danceability"] > 0.7 and f["energy"] > 0.7,
-        "color": "#FF5722"  # Deep Orange
+        "color": "#FF5722"
     },
     {
         "name": "Melancholic introspection",
         "description": "This playlist is perfect for a rainy day, with its mellow and introspective vibe.",
         "conditions": lambda f: f["valence"] < 0.4 and f["energy"] < 0.5,
-        "color": "#42A5F5"  # Blue
+        "color": "#42A5F5"
     },
     {
         "name": "Upbeat & Happy",
         "description": "This playlist is full of positive vibes and will be sure to put a smile on your face.",
         "conditions": lambda f: f["valence"] > 0.7 and f["energy"] > 0.6,
-        "color": "#FFCA28"  # Amber
+        "color": "#FFCA28"
     },
     {
         "name": "Acoustic Cafe",
         "description": "This playlist is perfect for a chill afternoon at a coffee shop, with its acoustic and relaxed feel.",
         "conditions": lambda f: f["acousticness"] > 0.6 and f["energy"] < 0.5,
-        "color": "#8D6E63"  # Brown
+        "color": "#8D6E63"
     },
     {
         "name": "Energetic & Angry",
         "description": "This playlist is full of raw power and aggression, perfect for a workout or when you need to let off some steam.",
         "conditions": lambda f: f["energy"] > 0.8 and f["valence"] < 0.3,
-        "color": "#B71C1C"  # Red
+        "color": "#B71C1C"
     },
     {
         "name": "Late Night Drive",
         "description": "This playlist is the perfect soundtrack for a late-night drive, with its atmospheric and electronic sound.",
         "conditions": lambda f: f["energy"] > 0.6 and f["danceability"] > 0.6 and f["instrumentalness"] > 0.5,
-        "color": "#7E57C2"  # Deep Purple
+        "color": "#7E57C2"
     }
 ]
 
@@ -105,18 +93,19 @@ async def login():
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
         "scope": scope,
-        "redirect_uri": SPOTIFY_REDIRECT_URI,  # Use the variable here
+        "redirect_uri": SPOTIFY_REDIRECT_URI,
         "show_dialog": True
     }
     auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url=auth_url)
+
 @app.get("/callback")
 async def callback(code: str):
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": SPOTIFY_REDIRECT_URI  # Use the variable here
+        "redirect_uri": SPOTIFY_REDIRECT_URI
     }
     headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
 
@@ -129,8 +118,7 @@ async def callback(code: str):
     access_token = token_info.get("access_token")
     refresh_token = token_info.get("refresh_token")
 
-    # Redirect to frontend, using the production URL if available.
-    frontend_url = PRODUCTION_URL or "http://localhost:3000"
+    frontend_url = "https://aurafai.netlify.app"
     redirect_url = f"{frontend_url}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
@@ -199,7 +187,6 @@ async def get_audio_features(track_ids: List[str], access_token: str):
     if not track_ids:
         return []
     headers = get_spotify_headers(access_token)
-    # Spotify API has a limit of 100 IDs per request
     audio_features_list = []
     for i in range(0, len(track_ids), 100):
         batch = track_ids[i:i+100]
@@ -211,7 +198,7 @@ async def get_audio_features(track_ids: List[str], access_token: str):
     return audio_features_list
 
 def calculate_aura(features_list: List[Dict]):
-    features_list = [f for f in features_list if f] # Filter out None values
+    features_list = [f for f in features_list if f]
     if not features_list:
         return {
             "aura": {
@@ -292,5 +279,3 @@ async def get_audio_features_endpoint(request: AudioFeaturesRequest):
 @app.post("/calculate_aura")
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
-
-handler = Mangum(app)
