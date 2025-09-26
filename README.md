@@ -1,10 +1,5 @@
 # Aurafy.
 
-<div align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=30&duration=4000&pause=1000&color=3cec5&center=true&vCenter=true&width=500&height=70&lines=discover+your+musical+aura;analyze+your+playlists;get+algorithimic+insights;powered+by+Spotify+API" alt="Typing Animation" />
-</div>
-
-
 ![Aurafy Banner](https://capsule-render.vercel.app/api?type=venom&height=200&color=0:43cea2,100:185a9d&text=%20Aurafy&textBg=false&desc=(Find+Your+Musical+Personality)&descAlign=79&fontAlign=50&descAlignY=70&fontColor=f7f5f5)
 
 <p align="center">Aurafy is web application that analyzes your music listening habits and assigns humorous "auras" based on audio features.</p>
@@ -139,7 +134,7 @@ The application is optimized for all device sizes:
 <div align="center">
 <blockquote>
 <p><em>"Music is the shorthand of emotion."</em></p>
-<p><strong>— Leo Tolstoy</strong></p>
+<p><strong>Leo Tolstoy</strong></p>
 </blockquote>
 </div>
 
