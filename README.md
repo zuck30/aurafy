@@ -73,7 +73,7 @@
    - Create a Spotify Developer account at [https://developer.spotify.com/](https://developer.spotify.com/)
    - Register a new application.
    - In the app settings, add `http://127.0.0.1:8000/api/callback` as a redirect URI.
-   - For local development, you can leave the default `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` in `backend/main.py` or replace them with your own.
+   - For local development, you can leave the default `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` in `netlify/functions/api/api.py` or replace them with your own.
 
 5. **Run the application**
    - Start the development server:

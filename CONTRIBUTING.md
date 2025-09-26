@@ -29,20 +29,13 @@ Follow these steps to contribute to the project:
   - **Python 3.8+**
   - **Node.js 14+**
   - A Spotify Developer Account ([Sign up here](https://developer.spotify.com/))
-- Follow the setup instructions in the [README.md](README.md) to configure the backend and frontend:
-  - Install backend dependencies: `pip install -r backend/requirements.txt`
+- Follow the setup instructions in the [README.md](README.md) to configure the project:
+  - Install backend dependencies: `pip install -r requirements.txt`
   - Install frontend dependencies: `npm install` in the `frontend` directory
-  - Configure Spotify API credentials in `backend/main.py`
+  - Configure Spotify API credentials in `netlify/functions/api/api.py`
 - Test the application locally by running:
   ```bash
-  # Backend
-  cd backend
-  python main.py
-  ```
-  ```bash
-  # Frontend (in a new terminal)
-  cd frontend
-  npm start
+  netlify dev
   ```
 
 ### 5. Make Your Changes
@@ -102,14 +95,14 @@ Follow these steps to contribute to the project:
 - **Backend**:
   - Follow FastAPI conventions for endpoint design.
   - Ensure Spotify API calls are efficient and handle errors gracefully.
-  - Write unit tests for new functionality (place in `backend/tests/`).
+  - Write unit tests for new functionality.
 - **General**:
   - Keep code modular and reusable.
   - Add comments for complex logic.
   - Update documentation (e.g., README or code comments) for new features.
 
 ## 🛠️ Areas for Contribution
-- Adding new humorous auras (edit `backend/main.py`).
+- Adding new humorous auras (edit `netlify/functions/api/api.py`).
 - Improving UI/UX with better visualizations or animations.
 - Enhancing audio feature analysis algorithms.
 - Optimizing performance for large playlists.
