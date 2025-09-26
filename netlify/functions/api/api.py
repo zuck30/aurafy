@@ -20,11 +20,11 @@ class AuraCalculationRequest(BaseModel):
 app = FastAPI(title="Aurafy Your Playlist API")
 
 # In production, set this to your Netlify app's URL
-PRODUCTION_URL = os.environ.get("URL")
+PRODUCTION_URL = os.environ.get("https://aurafai.netlify.app")
 
 # CORS middleware to allow frontend connection
 origins = [
-    "http://localhost:3000",  # React app URL for local development
+    "https://aurafai.netlify.app",  # this has to be React app URL for production 
 ]
 if PRODUCTION_URL:
     origins.append(PRODUCTION_URL)
@@ -43,10 +43,10 @@ SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET", "449877bbefaa407
 
 if PRODUCTION_URL:
     # Use the production URL for the Spotify redirect URI
-    SPOTIFY_REDIRECT_URI = f"{PRODUCTION_URL}/api/callback"
+    SPOTIFY_REDIRECT_URI = "https://aurafai.netlify.app/api/callback"
 else:
     # Use the local URL for development
-    SPOTIFY_REDIRECT_URI = "http://localhost:8888/api/callback"
+    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
