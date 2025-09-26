@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Button, Center, Heading, Text, VStack, Image, Icon } from '@chakra-ui/react';
 import { FaSpotify } from 'react-icons/fa';
-import logo from './aurafy.png'; // Using the exact import path you provided
+import logo from './aurafy.png'; 
 
 const LOGIN_URL = 'http://localhost:8000/api/login';
 
