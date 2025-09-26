@@ -1,4 +1,4 @@
-# netlify/functions/api/api.py
+# netlify/functions/api.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
