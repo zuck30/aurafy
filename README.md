@@ -36,7 +36,7 @@
 
 **Tools & Platforms**
 
-![My Skills](https://skillicons.dev/icons?i=github,vscode,netlify,heroku&perline=10)
+![My Skills](https://skillicons.dev/icons?i=github,vscode&perline=10)
 
 **API**
 
@@ -48,68 +48,60 @@
 
 - Python 3.8+
 - Node.js 14+
-- Spotify Developer Account
+- A Spotify Developer Account
 
-### Installation
+### Installation & Setup
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/zuck30/aurafy.git
-   cd aurafy
-   ```
-
-2. **Set up the backend**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Set up the frontend**
-   ```bash
-   cd frontend
-   npm install 
-   ```
-
-4. **Configure Spotify API for Local Development**
-   - Create a Spotify Developer account at [https://developer.spotify.com/](https://developer.spotify.com/)
-   - Register a new application.
-   - In the app settings, add `http://127.0.0.1:8000/api/callback` as a redirect URI.
-   - For local development, you can leave the default `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` in `netlify/functions/api/api.py` or replace them with your own.
-
-5. **Run the application**
-   - Start the development server:
-     ```bash
-     netlify dev
-     ```
-   This will start both the frontend and the backend services.
-
-6. **Open your browser**
-   Navigate to the URL provided by `netlify dev` (usually [http://localhost:8888](http://localhost:8888)).
-
-## Deploying to Netlify
-
-This project is configured for easy deployment to Netlify.
-
-1.  **Fork this repository.**
-
-2.  **Create a new project on Netlify** and connect it to your forked repository.
-
-3.  **Configure Environment Variables:** In your Netlify project settings, add the following environment variables:
-
-    *   `URL`: The full URL of your Netlify deployment (e.g., `https://your-app-name.netlify.app`). This is a built-in Netlify environment variable, so you just need to reference it.
-    *   `FRONTEND_URL`: The same URL as `URL`.
-    *   `SPOTIFY_CLIENT_ID`: Your Spotify application's client ID.
-    *   `SPOTIFY_CLIENT_SECRET`: Your Spotify application's client secret.
-    *   `PYTHON_VERSION`: Set this to the Python version you want to use, e.g., `3.8`.
-
-4.  **Update Spotify Redirect URI:** In your Spotify application settings, add the following redirect URI:
-
-    ```
-    <YOUR_NETLIFY_URL>/api/callback
+1.  **Clone the Repository**
+    ```bash
+    git clone https://github.com/zuck30/aurafy.git
+    cd aurafy
     ```
 
-    Replace `<YOUR_NETLIFY_URL>` with your Netlify deployment URL.
+2.  **Configure Spotify Developer App**
+    - Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and create a new app.
+    - Go to your app's settings and add a new "Redirect URI".
+    - Add `http://localhost:8001/callback` to the list of Redirect URIs.
+    - Take note of your `Client ID` and `Client Secret`.
 
-5.  **Deploy!** Netlify will automatically build and deploy your application using the `netlify.toml` configuration.
+3.  **Set Up Environment Variables**
+    - You'll need to set `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET` as environment variables. You can do this by creating a `.env` file in the root of the project:
+      ```
+      SPOTIFY_CLIENT_ID=your_spotify_client_id
+      SPOTIFY_CLIENT_SECRET=your_spotify_client_secret
+      ```
+    - The backend (`main.py`) is set up to read these variables.
+
+4.  **Install Backend Dependencies**
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+5.  **Install Frontend Dependencies**
+    ```bash
+    npm install --prefix frontend
+    ```
+
+### Running the Application
+
+You'll need to run the backend and frontend in two separate terminals.
+
+1.  **Run the Backend**
+    - In the root directory, run:
+      ```bash
+      uvicorn main:app --reload --port 8001
+      ```
+    - The backend API will be running at `http://localhost:8001`.
+
+2.  **Run the Frontend**
+    - In a new terminal, from the root directory, run:
+      ```bash
+      npm start --prefix frontend
+      ```
+    - The frontend application will open automatically in your browser at `http://localhost:3000`.
+
+3.  **Open Your Browser**
+    - Navigate to `http://localhost:3000` to use the application.
 
  ### Aurafy overview
 <h2>The Login page</h2>

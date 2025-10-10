@@ -18,13 +18,13 @@ class AuraCalculationRequest(BaseModel):
 # Initialize FastAPI
 app = FastAPI(title="Aurafy Your Playlist API")
 
-# Vercel environment variables
-APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
+# Local development environment variables
+FRONTEND_URL = "http://localhost:3000"
+BACKEND_URL = "http://localhost:8001"
 
 # CORS configuration
 origins = [
-    "http://localhost:3000",
-    APP_URL
+    FRONTEND_URL,
 ]
 
 app.add_middleware(
@@ -38,7 +38,7 @@ app.add_middleware(
 # Spotify configuration
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = f"{APP_URL}/api/callback"
+SPOTIFY_REDIRECT_URI = f"{BACKEND_URL}/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -128,7 +128,7 @@ async def callback(code: str):
     access_token = token_info.get("access_token")
     refresh_token = token_info.get("refresh_token")
 
-    redirect_url = f"{APP_URL}/#access_token={access_token}&refresh_token={refresh_token}"
+    redirect_url = f"{FRONTEND_URL}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
 @app.get("/refresh_token")
@@ -302,3 +302,7 @@ async def get_audio_features_endpoint(request: AudioFeaturesRequest):
 @app.post("/calculate_aura")
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
