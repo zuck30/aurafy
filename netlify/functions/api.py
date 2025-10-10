@@ -93,6 +93,10 @@ AURAS = [
 async def root():
     return {"message": "Welcome to aurafy Your Playlist API"}
 
+@app.get("/health")
+async def health_check():
+    return {"status": "ok"}
+
 @app.get("/login")
 async def login():
     if not SPOTIFY_CLIENT_ID:
