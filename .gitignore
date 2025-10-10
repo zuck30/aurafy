@@ -16,3 +16,4 @@ pnpm-debug.log*
 coverage/
 .vscode/
 __pycache__/
+__pycache__/main.cpython-312.pyc
