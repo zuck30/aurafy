@@ -61,7 +61,7 @@
 2.  **Configure Spotify Developer App**
     - Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) and create a new app.
     - Go to your app's settings and add a new "Redirect URI".
-    - Add `http://localhost:8001/callback` to the list of Redirect URIs.
+    - Add `http://127.0.0.1:8000/api/callback` to the list of Redirect URIs.
     - Take note of your `Client ID` and `Client Secret`.
 
 3.  **Set Up Environment Variables**
@@ -89,9 +89,9 @@ You'll need to run the backend and frontend in two separate terminals.
 1.  **Run the Backend**
     - In the root directory, run:
       ```bash
-      uvicorn main:app --reload --port 8001
+      uvicorn main:app --reload --port 8000
       ```
-    - The backend API will be running at `http://localhost:8001`.
+    - The backend API will be running at `http://127.0.0.1:8000`.
 
 2.  **Run the Frontend**
     - In a new terminal, from the root directory, run:

@@ -15,12 +15,16 @@ class AudioFeaturesRequest(BaseModel):
 class AuraCalculationRequest(BaseModel):
     features_list: List[Dict]
 
-# Initialize FastAPI
+from fastapi import APIRouter
+
+# Initialize FastAPI and a router
 app = FastAPI(title="Aurafy Your Playlist API")
+api_router = APIRouter(prefix="/api")
+
 
 # Local development environment variables
 FRONTEND_URL = "http://localhost:3000"
-BACKEND_URL = "http://localhost:8000"
+BACKEND_URL = "http://localhost:8001"
 
 # CORS configuration
 origins = [
@@ -38,7 +42,7 @@ app.add_middleware(
 # Spotify configuration
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = f"{BACKEND_URL}/callback"
+SPOTIFY_REDIRECT_URI = f"{BACKEND_URL}/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -89,7 +93,7 @@ AURAS = [
 async def root():
     return {"message": "Welcome to aurafy Your Playlist API"}
 
-@app.get("/login")
+@api_router.get("/login")
 async def login():
     if not SPOTIFY_CLIENT_ID:
         raise HTTPException(status_code=500, detail="Spotify client ID not configured")
@@ -105,7 +109,7 @@ async def login():
     auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url=auth_url)
 
-@app.get("/callback")
+@api_router.get("/callback")
 async def callback(code: str):
     if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
         raise HTTPException(status_code=500, detail="Spotify credentials not configured")
@@ -131,7 +135,7 @@ async def callback(code: str):
     redirect_url = f"{FRONTEND_URL}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
-@app.get("/refresh_token")
+@api_router.get("/refresh_token")
 async def refresh_token(refresh_token: str):
     if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
         raise HTTPException(status_code=500, detail="Spotify credentials not configured")
@@ -156,7 +160,7 @@ async def refresh_token(refresh_token: str):
 def get_spotify_headers(access_token: str):
     return {"Authorization": f"Bearer {access_token}"}
 
-@app.get("/me")
+@api_router.get("/me")
 async def get_me(access_token: str):
     headers = get_spotify_headers(access_token)
     try:
@@ -166,7 +170,7 @@ async def get_me(access_token: str):
     except requests.RequestException as e:
         raise HTTPException(status_code=response.status_code, detail=str(e))
 
-@app.get("/playlists")
+@api_router.get("/playlists")
 async def get_playlists(access_token: str):
     headers = get_spotify_headers(access_token)
     try:
@@ -176,7 +180,7 @@ async def get_playlists(access_token: str):
     except requests.RequestException as e:
         raise HTTPException(status_code=response.status_code, detail=str(e))
 
-@app.get("/recently-played")
+@api_router.get("/recently-played")
 async def get_recently_played(access_token: str):
     headers = get_spotify_headers(access_token)
     try:
@@ -186,7 +190,7 @@ async def get_recently_played(access_token: str):
     except requests.RequestException as e:
         raise HTTPException(status_code=response.status_code, detail=str(e))
 
-@app.get("/playlist/{playlist_id}")
+@api_router.get("/playlist/{playlist_id}")
 async def get_playlist(playlist_id: str, access_token: str):
     headers = get_spotify_headers(access_token)
     try:
@@ -262,7 +266,7 @@ def calculate_aura(features_list: List[Dict]):
         "avg_features": avg_features,
     }
 
-@app.get("/analyze/playlist/{playlist_id}")
+@api_router.get("/analyze/playlist/{playlist_id}")
 async def analyze_playlist(playlist_id: str, access_token: str):
     track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
     try:
@@ -278,7 +282,7 @@ async def analyze_playlist(playlist_id: str, access_token: str):
         "details": playlist_details
     }
 
-@app.get("/analyze/recent")
+@api_router.get("/analyze/recent")
 async def analyze_recent(access_token: str):
     recent_data = await get_recently_played(access_token)
     track_ids = []
@@ -295,14 +299,16 @@ async def analyze_recent(access_token: str):
         "details": {"name": "Recently Played", "tracks": recent_data}
     }
 
-@app.post("/audio_features")
+@api_router.post("/audio_features")
 async def get_audio_features_endpoint(request: AudioFeaturesRequest):
     return await get_audio_features(request.track_ids, request.access_token)
 
-@app.post("/calculate_aura")
+@api_router.post("/calculate_aura")
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
 
+app.include_router(api_router)
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
