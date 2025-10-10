@@ -7,7 +7,6 @@ from typing import List, Dict
 import base64
 from pydantic import BaseModel
 import os
-from mangum import Mangum
 
 class AudioFeaturesRequest(BaseModel):
     track_ids: List[str]
@@ -89,10 +88,6 @@ AURAS = [
 @app.get("/")
 async def root():
     return {"message": "Welcome to aurafy Your Playlist API"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "ok"}
 
 @app.get("/login")
 async def login():
@@ -303,10 +298,8 @@ async def analyze_recent(access_token: str):
 
 @app.post("/audio_features")
 async def get_audio_features_endpoint(request: AudioFeaturesRequest):
-    return await get_audio_features(request.track_s, request.access_token)
+    return await get_audio_features(request.track_ids, request.access_token)
 
 @app.post("/calculate_aura")
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
     return calculate_aura(request.features_list)
-
-handler = Mangum(app)
