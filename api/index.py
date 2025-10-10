@@ -128,8 +128,7 @@ async def callback(code: str):
     access_token = token_info.get("access_token")
     refresh_token = token_info.get("refresh_token")
 
-    frontend_url = "https://aurafai.netlify.app"
-    redirect_url = f"{frontend_url}/#access_token={access_token}&refresh_token={refresh_token}"
+    redirect_url = f"{APP_URL}/#access_token={access_token}&refresh_token={refresh_token}"
     return RedirectResponse(url=redirect_url)
 
 @app.get("/refresh_token")
