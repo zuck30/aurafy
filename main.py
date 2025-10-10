@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
@@ -95,10 +96,13 @@ async def root():
 
 @api_router.get("/login")
 async def login():
+    logger.info("Received request for /api/login")
     if not SPOTIFY_CLIENT_ID:
+        logger.error("Spotify client ID not configured")
         raise HTTPException(status_code=500, detail="Spotify client ID not configured")
 
     scope = "user-read-private user-read-email user-read-recently-played playlist-read-private playlist-read-collaborative user-library-read"
+    logger.info(f"Requesting Spotify authorization with scope: {scope}")
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
@@ -111,10 +115,13 @@ async def login():
 
 @api_router.get("/callback")
 async def callback(code: str):
+    logger.info(f"Received callback from Spotify with code: {code}")
     if not SPOTIFY_CLIENT_ID or not SPOTIFY_CLIENT_SECRET:
+        logger.error("Spotify credentials not configured for callback")
         raise HTTPException(status_code=500, detail="Spotify credentials not configured")
 
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
+    logger.info("Requesting access token from Spotify")
     token_post_data = {
         "grant_type": "authorization_code",
         "code": code,
@@ -126,10 +133,13 @@ async def callback(code: str):
         response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
         response.raise_for_status()
         token_info = response.json()
+        logger.info("Successfully received access token from Spotify")
     except requests.RequestException as e:
+        logger.error(f"Failed to retrieve access token from Spotify: {e}")
         raise HTTPException(status_code=400, detail=f"Failed to retrieve access token: {str(e)}")
 
     access_token = token_info.get("access_token")
+    logger.info(f"Redirecting to frontend with access token: {access_token[:10]}...")
     refresh_token = token_info.get("refresh_token")
 
     redirect_url = f"{FRONTEND_URL}/#access_token={access_token}&refresh_token={refresh_token}"
