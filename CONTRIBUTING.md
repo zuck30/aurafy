@@ -7,14 +7,14 @@ Thank you for your interest in contributing to **Aurafy**! We welcome contributi
 Follow these steps to contribute to the project:
 
 ### 1. Fork the Repository
-- Navigate to the [Aura-fy repository](https://github.com/zuck30/aura-fy) on GitHub.
+- Navigate to the [aurafy repository](https://github.com/zuck30/aurafy) on GitHub.
 - Click the **Fork** button to create a copy of the repository under your GitHub account.
 
 ### 2. Clone Your Fork
 - Clone your forked repository to your local machine:
   ```bash
-  git clone https://github.com/zuck30/aura-fy.git
-  cd aura-fy
+  git clone https://github.com/zuck30/aurafy.git
+  cd aurafy
   ```
 
 ### 3. Create a Feature Branch
@@ -60,7 +60,7 @@ Follow these steps to contribute to the project:
   ```
 
 ### 8. Open a Pull Request
-- Go to the [Aura-fy repository](https://github.com/zuck30/aura-fy) on GitHub.
+- Go to the [aurafy repository](https://github.com/zuck30/aurafy) on GitHub.
 - Click **New Pull Request** and select your branch.
 - Provide a detailed description of your changes, including:
   - What you changed and why.
@@ -74,7 +74,7 @@ Follow these steps to contribute to the project:
 - Once approved, your changes will be merged into the main branch.
 
 ## 🐛 Reporting Bugs
-- Check the [Issues](https://github.com/zuck30/aura-fy/issues) page to ensure the bug hasn't already been reported.
+- Check the [Issues](https://github.com/zuck30/aurafy/issues) page to ensure the bug hasn't already been reported.
 - Open a new issue with:
   - A clear title and description.
   - Steps to reproduce the bug.
@@ -114,4 +114,4 @@ Follow these steps to contribute to the project:
 - Join the conversation on GitHub Discussions (if available).
 
 ## 🙏 Acknowledgments
-Thank you for contributing to **Aura-fy**! Your efforts help make this project more fun and engaging for everyone. Let's keep the musical vibes flowing!
+Thank you for contributing to **aurafy**! Your efforts help make this project more fun and engaging for everyone. Let's keep the musical vibes flowing!

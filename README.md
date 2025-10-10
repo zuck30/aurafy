@@ -11,11 +11,11 @@
 
 <div align="left">
     <a href="mailto:mwalyangashadrack@gmail.com"><img src="https://img.shields.io/badge/Contact%20Me-30302f?style=flat-square&logo=gmail" alt=""></a>
-    <a href="https://github.com/zuck30/aura-fy"><img src="https://img.shields.io/badge/Repository-30302f?style=flat-square&logo=github" alt=""></a>
+    <a href="https://github.com/zuck30/aurafy"><img src="https://img.shields.io/badge/Repository-30302f?style=flat-square&logo=github" alt=""></a>
 </div>
 
 <br>
-<a href="https://github.com/zuck30/aura-fy"> <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmU3dzFubm5zN3U4ZWtsaXN5cG1sZGd6ZXhqeW1yMDh1MnkzYjlseSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/EFGXDUBXcUd131C0CR/giphy.gif" width="40%" align="right" style="border-radius:10px; animation: float 6s ease-in-out infinite;" alt="Coding GIF">
+<a href="https://github.com/zuck30/aurafy"> <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmU3dzFubm5zN3U4ZWtsaXN5cG1sZGd6ZXhqeW1yMDh1MnkzYjlseSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/EFGXDUBXcUd131C0CR/giphy.gif" width="40%" align="right" style="border-radius:10px; animation: float 6s ease-in-out infinite;" alt="Coding GIF">
 </a>
 
 <ul>
