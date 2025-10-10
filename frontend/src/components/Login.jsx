@@ -146,12 +146,13 @@ const Login = () => {
             </Button>
 
             {/* Footer Section */}
-            <Text fontSize="xs" color="gray.400" pt={4}>
+            {/* <Text fontSize="xs" color="gray.400" pt={4}>
               By continuing, you agree to our{' '}
               <Text as="span" color="#1db954" _hover={{ textDecor: 'underline' }}>
                 non-existent Terms of Service
               </Text>.
-            </Text>
+            </Text> */}
+
           </VStack>
         </Box>
       </Center>
