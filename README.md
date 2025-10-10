@@ -150,32 +150,10 @@ The application is optimized for all device sizes:
     <a href="https://www.buymeacoffee.com/zuck30" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-red.png" alt="Buy Me A Coffee" height="30px" ></a>
 </p>
 
-<div align="center">
-<blockquote>
-<p><em>"Music is the shorthand of emotion."</em></p>
-<p><strong>Leo Tolstoy</strong></p>
-</blockquote>
-</div>
-
-## Contributing
-
-We welcome contributions! Please feel free to submit a Pull Request.
-
-1. Fork the project
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## License
 
 This project is licensed under the MIT License, see the [LICENSE.md](LICENSE.md) file for details.
-
-## Acknowledgments
-
-- Spotify for their comprehensive API
-- FastAPI for the excellent web framework
-- React team for the frontend library
 
 ## Support
 
