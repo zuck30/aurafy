@@ -19,11 +19,13 @@ class AuraCalculationRequest(BaseModel):
 # Initialize FastAPI
 app = FastAPI(title="Aurafy Your Playlist API")
 
+# Vercel environment variables
+APP_URL = os.environ.get("APP_URL", "http://localhost:3000")
+
 # CORS configuration
 origins = [
     "http://localhost:3000",
-    "https://aurafai.netlify.app",
-    "https://aurafai.netlify.app"
+    APP_URL
 ]
 
 app.add_middleware(
@@ -37,12 +39,7 @@ app.add_middleware(
 # Spotify configuration
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-
-# Set the redirect URI based on the environment
-if os.environ.get("CONTEXT") == "production":
-    SPOTIFY_REDIRECT_URI = "https://aurafai.netlify.app/api/callback"
-else:
-    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
+SPOTIFY_REDIRECT_URI = f"{APP_URL}/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -306,7 +303,7 @@ async def analyze_recent(access_token: str):
 
 @app.post("/audio_features")
 async def get_audio_features_endpoint(request: AudioFeaturesRequest):
-    return await get_audio_features(request.track_ids, request.access_token)
+    return await get_audio_features(request.track_s, request.access_token)
 
 @app.post("/calculate_aura")
 async def calculate_aura_endpoint(request: AuraCalculationRequest):
