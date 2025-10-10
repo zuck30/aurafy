@@ -103,6 +103,29 @@ You'll need to run the backend and frontend in two separate terminals.
 3.  **Open Your Browser**
     - Navigate to `http://localhost:3000` to use the application.
 
+### Troubleshooting
+
+If you encounter an `ERR_CONNECTION_REFUSED` error when trying to log in, it likely means your backend server is not running or not accessible. Here's how to debug:
+
+1.  **Check the Backend Terminal:**
+    - Look at the terminal where you ran the `uvicorn` command.
+    - When you click "Continue with Spotify," you should see a log message like this:
+      ```
+      INFO:     __main__: Received request for /api/login
+      ```
+    - If you don't see this message, the frontend is not correctly communicating with the backend.
+
+2.  **Check the Spotify Callback:**
+    - After you log in with Spotify, you should be redirected back to the application. In the backend terminal, you should see:
+      ```
+      INFO:     __main__: Received callback from Spotify with code: <some_code>
+      ```
+    - If you see an error here, it could be an issue with your Spotify API credentials or the redirect URI setting in your Spotify Developer Dashboard.
+
+3.  **Directly Access the API:**
+    - With the backend running, open `http://127.0.0.1:8000/` in your browser. You should see `{"message":"Welcome to aurafy Your Playlist API"}`.
+    - If this doesn't load, there is an issue with the backend server itself.
+
  ### Aurafy overview
 <h2>The Login page</h2>
 
