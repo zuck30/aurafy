@@ -85,7 +85,7 @@ AURAS = [
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to Aura-fy Your Playlist API"}
+    return {"message": "Welcome to aurafy Your Playlist API"}
 
 @app.get("/login")
 async def login():
