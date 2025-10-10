@@ -36,7 +36,12 @@ app.add_middleware(
 # Spotify configuration
 SPOTIFY_CLIENT_ID = os.environ.get("SPOTIFY_CLIENT_ID")
 SPOTIFY_CLIENT_SECRET = os.environ.get("SPOTIFY_CLIENT_SECRET")
-SPOTIFY_REDIRECT_URI = "https://aurafai.netlify.app/api/callback"
+
+# Set the redirect URI based on the environment
+if os.environ.get("CONTEXT") == "production":
+    SPOTIFY_REDIRECT_URI = "https://aurafai.netlify.app/api/callback"
+else:
+    SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
