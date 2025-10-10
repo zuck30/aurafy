@@ -10,6 +10,12 @@
   force = true
 
 [[redirects]]
+  from = "/hello"
+  to = "/.netlify/functions/hello"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
