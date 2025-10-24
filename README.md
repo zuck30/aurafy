@@ -168,7 +168,7 @@ The application is optimized for all device sizes:
 
 ## License
 
-This project is licensed under the MIT License, see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License. [LICENSE](LICENSE)
 
 ## Support
 
@@ -177,7 +177,5 @@ If you have any questions or issues, please open an issue on GitHub or contact u
 ## Enjoy!
 
 We hope you have fun discovering your musical aura! Share your results with friends and compare your musical personalities.
-
----
 
 **Note**: This app is designed for entertainment purposes only. The "auras" are not scientifically validated assessments of personality or mood.
