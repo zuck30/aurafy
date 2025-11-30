@@ -1,7 +1,7 @@
 {
-  "name": "aura-fy-frontend",
+  "name": "aurafy",
   "version": "1.0.0",
-  "description": "Frontend for Aura-fy Your Playlist app",
+  "description": "Frontend for Aurafy",
   "main": "src/index.js",
   "scripts": {
     "start": "react-scripts start",
