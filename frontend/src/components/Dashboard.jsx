@@ -582,7 +582,7 @@ const Dashboard = () => {
         <VStack spacing="4">
           <Spinner size="xl" color="#1db954" thickness="4px" speed="0.65s" />
           <Text color="white" fontWeight="bold" fontSize="lg">
-            Don't carpe diem bro.
+            Work On Your Ideas..
           </Text>
         </VStack>
       </Center>
