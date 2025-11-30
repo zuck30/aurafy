@@ -117,7 +117,7 @@ const Login = () => {
                 Discover the <Text as="span" color="#1ed760">Aura</Text> of your Spotify playlists
               </Text>
               <Text fontSize="sm" color="gray.300" lineHeight="1.6">
-                Connect your Spotify account to unlock a vibrant, personalized experience.
+                Connect your Spotify account to unlock your personalized experience.
               </Text>
             </VStack>
 
