@@ -3,7 +3,9 @@ import { Box, Button, Center, Heading, Text, VStack, Image, Icon } from '@chakra
 import { FaSpotify } from 'react-icons/fa';
 import logo from './aurafy.png'; 
 
-const LOGIN_URL = 'http://localhost:8000/api/login';
+const LOGIN_URL = 'http://127.0.0.1:8000/api/login';
+
+
 
 const Login = () => {
   return (
