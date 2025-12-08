@@ -15,9 +15,6 @@
 </div>
 
 <br>
-<a href="https://github.com/zuck30/aurafy"> <img src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmU3dzFubm5zN3U4ZWtsaXN5cG1sZGd6ZXhqeW1yMDh1MnkzYjlseSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/EFGXDUBXcUd131C0CR/giphy.gif" width="40%" align="right" style="border-radius:10px; animation: float 6s ease-in-out infinite;" alt="Coding GIF">
-</a>
-
 <ul>
     <li>🔭 Currently analyzing musical patterns with <a href="https://developer.spotify.com/documentation/web-api">Spotify API</a></li>
     <li>👨‍💻 Built with React, FastAPI, and Python</li>
