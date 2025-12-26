@@ -480,7 +480,7 @@ const StatsCard = ({ playlists, recentTracks }) => {
 };
 
 const Dashboard = () => {
-  const { token, user, recentTracks, setRecentTracks } = useAuth();
+  const { token, user, recentTracks, setRecentTracks, logout } = useAuth();
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [playlistViewMode, setPlaylistViewMode] = useState('grid');
@@ -546,7 +546,7 @@ const Dashboard = () => {
   return (
     <Box bg={bgColor} color="white" fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" minH="100vh">
       <SidebarContent display={{ base: 'none', md: 'block' }} />
-      <BottomNavBar />
+      <BottomNavBar logout={logout} />
 
       <Box
         ml={{ base: 0, md: '260px' }}
