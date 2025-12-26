@@ -69,23 +69,87 @@ const RecentAnalysis = () => {
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
+    console.log('🔍 RecentAnalysis mounted');
+    console.log('Token from useAuth:', token ? `${token.substring(0, 20)}...` : 'No token');
+    
+    // Quick test of the token
+    if (token) {
+      fetch('https://api.spotify.com/v1/me', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      .then(res => {
+        console.log('✅ Direct token test status:', res.status);
+        if (!res.ok) {
+          console.error('❌ Token invalid, status:', res.status);
+        }
+        return res.json();
+      })
+      .then(data => console.log('✅ User data:', data.display_name || data.id))
+      .catch(err => console.error('❌ Direct test error:', err));
+    }
+  }, [token]);
+
+  useEffect(() => {
     const performAnalysis = async () => {
       if (!token) {
+        console.error('❌ No token available');
+        setError("No authentication token found. Please login again.");
         setLoading(false);
-        setError("No token found. Please login.");
         return;
       }
 
+      console.log('🚀 Starting analysis with token:', token.substring(0, 30) + '...');
+      
       try {
         setLoading(true);
         setError(null);
 
         const res = await analyzeRecent(token);
+        console.log('✅ Analysis successful:', res.data);
         setAnalysis(res.data);
 
       } catch (err) {
-        console.error("Failed to perform recent analysis", err);
-        setError(err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'An error occurred during analysis.');
+        console.error('❌ Analysis failed:', err);
+        
+        if (err.response) {
+          console.error('Response status:', err.response.status);
+          console.error('Response data:', err.response.data);
+          
+          if (err.response.status === 403) {
+            // Token expired - try to refresh
+            const refreshToken = localStorage.getItem('refreshToken');
+            if (refreshToken) {
+              try {
+                console.log('🔄 Attempting token refresh...');
+                const refreshRes = await fetch(
+                  `http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`
+                );
+                
+                if (refreshRes.ok) {
+                  const data = await refreshRes.json();
+                  const newToken = data.access_token;
+                  localStorage.setItem('token', newToken);
+                  
+                  // Retry the analysis
+                  console.log('🔄 Retrying analysis with new token...');
+                  const retryRes = await analyzeRecent(newToken);
+                  setAnalysis(retryRes.data);
+                  return;
+                }
+              } catch (refreshErr) {
+                console.error('Token refresh failed:', refreshErr);
+              }
+            }
+            
+            setError("Your session has expired. Please log in again.");
+          } else {
+            setError(`Error ${err.response.status}: ${JSON.stringify(err.response.data)}`);
+          }
+        } else if (err.request) {
+          setError("No response from server. Is the backend running?");
+        } else {
+          setError(`Error: ${err.message}`);
+        }
       } finally {
         setLoading(false);
       }
@@ -119,9 +183,26 @@ const RecentAnalysis = () => {
           >
             Something Went Wrong
           </Heading>
+          
+          <Box 
+            bg="#1a1a1a" 
+            p={6} 
+            borderRadius="lg" 
+            border="1px solid #ff3333"
+            maxW="600px"
+          >
+            <Text color="#ff3333" fontWeight="bold" mb={2}>
+              Error Details:
+            </Text>
+            <Text color="#B3B3B3" fontSize="sm" fontFamily="monospace" whiteSpace="pre-wrap">
+              {typeof error === 'string' ? error : JSON.stringify(error, null, 2)}
+            </Text>
+          </Box>
+          
           <Text color="#B3B3B3" fontSize={{ base: 'md', md: 'lg' }} textAlign="center">
-            {error}
+            Your session may have expired. Please try logging in again.
           </Text>
+          
           <Button
             as={RouterLink}
             to="/"
@@ -138,8 +219,31 @@ const RecentAnalysis = () => {
               transform: 'scale(1.05)',
             }}
             transition="all 0.3s"
+            onClick={() => {
+              // Clear the token and force re-login
+              localStorage.removeItem('token');
+              localStorage.removeItem('refreshToken');
+            }}
           >
-            Back to Dashboard
+            Back to Login
+          </Button>
+          
+          <Button
+            onClick={() => {
+              // Test the API directly
+              const token = localStorage.getItem('token');
+              if (token) {
+                window.open(`http://localhost:8000/api/analyze/recent?access_token=${token}`, '_blank');
+              }
+            }}
+            size="md"
+            variant="outline"
+            color="#1DB954"
+            borderColor="#1DB954"
+            borderRadius="full"
+            _hover={{ bg: '#1DB954', color: 'black' }}
+          >
+            Test API Directly
           </Button>
         </VStack>
       </Center>
