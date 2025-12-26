@@ -12,13 +12,10 @@ import {
   Image,
   Spinner,
   Center,
-  useDisclosure,
   IconButton,
   Avatar,
   Button,
   Icon,
-  Drawer,
-  DrawerContent,
   HStack,
   Input,
   InputGroup,
@@ -56,6 +53,7 @@ import {
 } from 'react-icons/fa';
 import { getPlaylists, getRecentlyPlayed } from '../api';
 import { useAuth } from '../App';
+import BottomNavBar from './BottomNavBar';
 
 const SidebarContent = ({ onClose, ...rest }) => {
   const { user, logout } = useAuth();
@@ -92,14 +90,6 @@ const SidebarContent = ({ onClose, ...rest }) => {
             Aurafy
           </Text>
         </Flex>
-        <IconButton
-          display={{ base: 'flex', md: 'none' }}
-          onClick={onClose}
-          variant="ghost"
-          colorScheme="whiteAlpha"
-          aria-label="close menu"
-          icon={<FaBars />}
-        />
       </Flex>
       
       <VStack spacing="1" align="stretch" mt="8">
@@ -167,41 +157,6 @@ const NavItem = ({ icon, children, path, isActive, ...rest }) => {
   );
 };
 
-const MobileNav = ({ onOpen, ...rest }) => {
-  const { user } = useAuth();
-  const bgColor = useColorModeValue('rgba(18, 18, 18, 0.95)', 'rgba(18, 18, 18, 0.95)');
-  const borderColor = useColorModeValue('whiteAlpha.200', 'whiteAlpha.200');
-
-  return (
-    <Flex
-      ml={{ base: 0, md: '260px' }}
-      px={{ base: 4, md: 6 }}
-      height="16"
-      alignItems="center"
-      bg={bgColor}
-      borderBottomWidth="1px"
-      borderBottomColor={borderColor}
-      backdropFilter="blur(16px)"
-      justifyContent="space-between"
-      color="white"
-      fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-      zIndex="5"
-      {...rest}
-    >
-      <IconButton
-        variant="ghost"
-        colorScheme="whiteAlpha"
-        onClick={onOpen}
-        aria-label="open menu"
-        icon={<FaBars />}
-      />
-      <Flex align="center">
-        <Icon as={FaSpotify} fontSize="xl" color="#1DB954" mr="2" />
-      </Flex>
-      <Avatar size="sm" name={user?.display_name} src={user?.images?.[0]?.url} />
-    </Flex>
-  );
-};
 
 const PlaylistCard = ({ playlist, viewMode }) => {
   const bgColor = useColorModeValue('rgba(40, 40, 40, 0.95)', 'rgba(40, 40, 40, 0.95)');
@@ -528,7 +483,6 @@ const Dashboard = () => {
   const { token, user, recentTracks, setRecentTracks } = useAuth();
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const [playlistViewMode, setPlaylistViewMode] = useState('grid');
   const [trackViewMode, setTrackViewMode] = useState('grid');
   const [searchQuery, setSearchQuery] = useState('');
@@ -591,25 +545,15 @@ const Dashboard = () => {
 
   return (
     <Box bg={bgColor} color="white" fontFamily="'Circular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" minH="100vh">
-      <SidebarContent onClose={onClose} display={{ base: 'none', md: 'block' }} />
-      <Drawer
-        isOpen={isOpen}
-        placement="left"
-        onClose={onClose}
-        returnFocusOnClose={false}
-        onOverlayClick={onClose}
-        size="full"
-      >
-        <DrawerContent>
-          <SidebarContent onClose={onClose} />
-        </DrawerContent>
-      </Drawer>
+      <SidebarContent display={{ base: 'none', md: 'block' }} />
+      <BottomNavBar />
 
       <Box
         ml={{ base: 0, md: '260px' }}
         height="100vh"
         overflowY="auto"
         p={{ base: '4', md: '8' }}
+        pb={{ base: '20', md: '8' }}
         maxW="container.xl"
         mx="auto"
         sx={{
@@ -623,9 +567,7 @@ const Dashboard = () => {
           },
         }}
       >
-        <MobileNav display={{ base: 'flex', md: 'none' }} onOpen={onOpen} />
-
-        <VStack spacing={{ base: '8', md: '12' }} align="stretch" mt={{ base: '0', md: '4' }}>
+        <VStack spacing={{ base: '8', md: '12' }} align="stretch" mt={{ base: '4', md: '4' }}>
           <Flex direction={{ base: 'column', md: 'row' }} justify="space-between" align={{ base: 'stretch', md: 'center' }} mb="4">
             <VStack align={{ base: 'center', md: 'start' }} spacing="2">
               <Heading size={{ base: 'xl', md: '2xl' }} fontWeight="black" letterSpacing="-1px">
