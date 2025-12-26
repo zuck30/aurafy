@@ -17,87 +17,95 @@ import {
   HStack,
   Badge,
   useBreakpointValue,
-  keyframes,
 } from '@chakra-ui/react';
 import { FaArrowLeft, FaPlay, FaMusic } from 'react-icons/fa';
 import { getPlaylists } from '../api';
 import { useAuth } from '../App';
 
-const hoverAnimation = keyframes`
-  0% { transform: scale(1); }
-  50% { transform: scale(1.03); }
-  100% { transform: scale(1); }
-`;
-
 const PlaylistCard = ({ playlist }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   return (
-    <RouterLink to={`/analyze/playlist/${playlist.id}`}>
+    <RouterLink to={`/analyze/playlist/${playlist.id}`} style={{ textDecoration: 'none' }}>
       <Card
-        bg="rgba(40, 40, 40, 0.95)"
+        bg="#121212"
         borderRadius="xl"
         overflow="hidden"
-        boxShadow="0 8px 32px rgba(0, 0, 0, 0.2)"
-        border="1px solid rgba(255,255,255,0.05)"
-        _hover={{
-          transform: 'scale(1.03)',
-          boxShadow: '0 12px 48px rgba(0, 0, 0, 0.3)',
-          bg: 'rgba(60, 60, 60, 0.95)',
+        border="1px solid #282828"
+        transition="all 0.3s"
+        _hover={{ 
+          transform: 'translateY(-4px)', 
+          boxShadow: '0 20px 40px rgba(29,185,84,0.15)',
+          bg: '#181818'
         }}
-        transition="all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)"
-        position="relative"
-        _groupHover={{ animation: `${hoverAnimation} 2s infinite` }}
       >
-        <Box position="relative" aspectRatio="1/1">
+        <Box position="relative">
           <Image
             src={playlist.images[0]?.url || 'https://via.placeholder.com/300'}
             alt={playlist.name}
+            aspectRatio={1}
             objectFit="cover"
-            w="full"
-            h="full"
           />
           <Box
             position="absolute"
-            top="0"
-            left="0"
-            right="0"
-            bottom="0"
-            bgGradient="linear(to-t, rgba(0,0,0,0.6), transparent)"
+            inset={0}
+            bg="linear-gradient(to top, rgba(0,0,0,0.7), transparent)"
             opacity={isMobile ? 1 : 0}
             _groupHover={{ opacity: 1 }}
-            transition="opacity 0.2s ease"
+            transition="opacity 0.3s"
             display="flex"
-            alignItems="flex-end"
-            justifyContent="flex-start"
-            p="4"
+            alignItems="center"
+            justifyContent="center"
           >
             <IconButton
               aria-label="Play playlist"
               icon={<FaPlay />}
-              colorScheme="green"
-              variant="solid"
               size="lg"
+              colorScheme="green"
+              bg="#1DB954"
               borderRadius="full"
-              bg="#1db954"
               _hover={{ bg: '#1ed760', transform: 'scale(1.1)' }}
-              transition="all 0.2s ease"
+              transition="all 0.2s"
             />
           </Box>
         </Box>
-        <CardBody p="4">
-          <VStack align="start" spacing="1">
-            <Heading size="md" fontWeight="black" color="white" noOfLines={1}>
+        <CardBody p={4}>
+          <VStack align="start" spacing={1}>
+            <Text
+              fontWeight="bold"
+              color="#FFFFFF"
+              fontSize="md"
+              noOfLines={1}
+            >
               {playlist.name}
-            </Heading>
-            <Text fontSize="sm" color="gray.300" noOfLines={2}>
+            </Text>
+            <Text
+              fontSize="sm"
+              color="#B3B3B3"
+              noOfLines={2}
+            >
               {playlist.description || 'No description'}
             </Text>
-            <HStack spacing="2">
-              <Badge colorScheme="green" variant="subtle" fontSize="xs">
+            <HStack spacing={2} mt={1}>
+              <Badge
+                bg="#1DB954"
+                color="black"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+                fontWeight="bold"
+              >
                 {playlist.tracks.total} tracks
               </Badge>
-              <Badge colorScheme="gray" variant="subtle" fontSize="xs">
+              <Badge
+                bg="#282828"
+                color="#B3B3B3"
+                fontSize="xs"
+                px={3}
+                py={1}
+                borderRadius="full"
+              >
                 By {playlist.owner.display_name}
               </Badge>
             </HStack>
@@ -132,15 +140,10 @@ const PlaylistSelection = () => {
 
   if (loading) {
     return (
-      <Center
-        h="100vh"
-        bg="rgba(18, 18, 18, 0.98)"
-        backdropFilter="blur(20px)"
-        fontFamily="'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-      >
-        <VStack spacing="6">
-          <Spinner size="xl" color="#1db954" thickness="4px" speed="0.65s" />
-          <Text color="white" fontWeight="bold" fontSize={{ base: 'lg', md: 'xl' }}>
+      <Center minH="100vh" bg="#000">
+        <VStack spacing={6}>
+          <Spinner size="xl" color="#1DB954" thickness="4px" />
+          <Text color="#B3B3B3" fontSize={{ base: 'lg', md: 'xl' }} fontWeight="medium">
             Loading your playlists...
           </Text>
         </VStack>
@@ -150,49 +153,47 @@ const PlaylistSelection = () => {
 
   return (
     <Box
-      bg="rgba(18, 18, 18, 0.98)"
+      bg="#000"
       minH="100vh"
-      p={{ base: '4', md: '8' }}
+      p={{ base: 4, md: 8 }}
+      color="#FFFFFF"
       fontFamily="'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
-      color="white"
-      maxW="container.xl"
-      mx="auto"
     >
       <Button
         as={RouterLink}
         to="/"
         leftIcon={<Icon as={FaArrowLeft} />}
-        mb={{ base: '6', md: '8' }}
+        mb={{ base: 6, md: 8 }}
         size="md"
-        bg="#1db954"
-        color="white"
+        bg="#1DB954"
+        color="black"
         borderRadius="full"
         fontWeight="bold"
-        px="6"
-        boxShadow="0 8px 32px rgba(29, 185, 84, 0.3)"
+        px={6}
         _hover={{
           bg: '#1ed760',
           transform: 'scale(1.05)',
-          boxShadow: '0 12px 48px rgba(29, 185, 84, 0.4)',
         }}
-        _active={{ transform: 'scale(1)' }}
-        transition="all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1)"
+        transition="all 0.3s"
       >
         Back to Dashboard
       </Button>
-      <HStack spacing="4" mb={{ base: '6', md: '8' }} align="center">
-        <Icon as={FaMusic} color="#1db954" boxSize="8" />
+
+      <HStack spacing={4} mb={{ base: 6, md: 8 }} align="center">
+        <Icon as={FaMusic} color="#1DB954" boxSize={8} />
         <Heading
           size={{ base: 'xl', md: '2xl' }}
-          fontWeight="black"
-          letterSpacing="-1px"
+          fontWeight="900"
+          letterSpacing="-0.5px"
+          color="#FFFFFF"
         >
           Choose a Playlist to Analyze
         </Heading>
       </HStack>
+
       <SimpleGrid
         columns={{ base: 2, sm: 3, md: 4, lg: 5, xl: 6 }}
-        spacing="4"
+        spacing={{ base: 4, md: 6 }}
       >
         {playlists.map(p => (
           <PlaylistCard key={p.id} playlist={p} />
