@@ -19,7 +19,7 @@ import {
 } from '@chakra-ui/react';
 import { FaArrowLeft, FaMusic } from 'react-icons/fa';
 import { useAuth } from '../App';
-import api from '../api';
+import { analyzeRecent } from '../api';
 
 const FeatureProgress = ({ label, value }) => (
   <Box>
@@ -70,9 +70,9 @@ const RecentAnalysis = () => {
 
   useEffect(() => {
     const performAnalysis = async () => {
-      if (!token || recentTracks.length === 0) {
+      if (!token) {
         setLoading(false);
-        setError("No recent tracks found. Please listen to some music or visit the dashboard first.");
+        setError("No token found. Please login.");
         return;
       }
 
@@ -80,29 +80,9 @@ const RecentAnalysis = () => {
         setLoading(true);
         setError(null);
 
-        const track_ids = [...new Set(recentTracks.map(item => item?.track?.id).filter(id => id))];
+        const res = await analyzeRecent(token);
+        setAnalysis(res.data);
 
-        if (track_ids.length === 0) {
-          setError("Could not find any valid tracks in your recent history.");
-          setLoading(false);
-          return;
-        }
-
-        const audioFeaturesRes = await api.post('/audio_features', {
-          track_ids,
-          access_token: token,
-        });
-        const audio_features = audioFeaturesRes.data;
-
-        const auraRes = await api.post('/calculate_aura', {
-          features_list: audio_features,
-        });
-        const analysisResult = auraRes.data;
-
-        setAnalysis({
-          analysis: analysisResult,
-          details: { name: "Recently Played", tracks: recentTracks },
-        });
       } catch (err) {
         console.error("Failed to perform recent analysis", err);
         setError(err.response?.data?.detail ? JSON.stringify(err.response.data.detail) : 'An error occurred during analysis.');
@@ -112,7 +92,7 @@ const RecentAnalysis = () => {
     };
 
     performAnalysis();
-  }, [token, recentTracks]);
+  }, [token]);
 
   if (loading) {
     return (
