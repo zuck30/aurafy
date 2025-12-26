@@ -1,5 +1,5 @@
 # backend/main.py
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import requests
@@ -7,6 +7,11 @@ import urllib.parse
 from typing import List, Dict
 import base64
 from pydantic import BaseModel
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class AudioFeaturesRequest(BaseModel):
     track_ids: List[str]
@@ -20,7 +25,7 @@ app = FastAPI(title="Aurafy Your Playlist API")
 # CORS middleware to allow frontend connection
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app URL
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,7 +34,7 @@ app.add_middleware(
 # Spotify API credentials
 SPOTIFY_CLIENT_ID = "85a4b164d555499a84c0d16725bad0fa"
 SPOTIFY_CLIENT_SECRET = "449877bbefaa407cae497994af27658b"
-SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"  # Changed from localhost to 127.0.0.1
+SPOTIFY_REDIRECT_URI = "http://127.0.0.1:8000/api/callback"
 
 # Spotify API URLs
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
@@ -42,37 +47,37 @@ AURAS = [
         "name": "High-Energy Dance Party",
         "description": "This playlist is a non-stop dance party! Perfect for a workout or a night out.",
         "conditions": lambda f: f["danceability"] > 0.7 and f["energy"] > 0.7,
-        "color": "#FF5722"  # Deep Orange
+        "color": "#FF5722"
     },
     {
         "name": "Melancholic introspection",
         "description": "This playlist is perfect for a rainy day, with its mellow and introspective vibe.",
         "conditions": lambda f: f["valence"] < 0.4 and f["energy"] < 0.5,
-        "color": "#42A5F5"  # Blue
+        "color": "#42A5F5"
     },
     {
         "name": "Upbeat & Happy",
         "description": "This playlist is full of positive vibes and will be sure to put a smile on your face.",
         "conditions": lambda f: f["valence"] > 0.7 and f["energy"] > 0.6,
-        "color": "#FFCA28"  # Amber
+        "color": "#FFCA28"
     },
     {
         "name": "Acoustic Cafe",
         "description": "This playlist is perfect for a chill afternoon at a coffee shop, with its acoustic and relaxed feel.",
         "conditions": lambda f: f["acousticness"] > 0.6 and f["energy"] < 0.5,
-        "color": "#8D6E63"  # Brown
+        "color": "#8D6E63"
     },
     {
         "name": "Energetic & Angry",
         "description": "This playlist is full of raw power and aggression, perfect for a workout or when you need to let off some steam.",
         "conditions": lambda f: f["energy"] > 0.8 and f["valence"] < 0.3,
-        "color": "#B71C1C"  # Red
+        "color": "#B71C1C"
     },
     {
         "name": "Late Night Drive",
         "description": "This playlist is the perfect soundtrack for a late-night drive, with its atmospheric and electronic sound.",
         "conditions": lambda f: f["energy"] > 0.6 and f["danceability"] > 0.6 and f["instrumentalness"] > 0.5,
-        "color": "#7E57C2"  # Deep Purple
+        "color": "#7E57C2"
     }
 ]
 
@@ -87,36 +92,46 @@ async def login():
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
         "scope": scope,
-        "redirect_uri": SPOTIFY_REDIRECT_URI,  # Use the variable here
+        "redirect_uri": SPOTIFY_REDIRECT_URI,
         "show_dialog": True
     }
     auth_url = f"{SPOTIFY_AUTH_URL}?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url=auth_url)
+
 @app.get("/api/callback")
 async def callback(code: str):
+    logger.info("Received callback from Spotify")
+    
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": SPOTIFY_REDIRECT_URI  # Use the variable here
+        "redirect_uri": SPOTIFY_REDIRECT_URI
     }
     headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
 
     response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
 
     if response.status_code != 200:
+        logger.error(f"Failed to retrieve access token: {response.text}")
         raise HTTPException(status_code=400, detail=f"Failed to retrieve access token: {response.text}")
 
     token_info = response.json()
     access_token = token_info.get("access_token")
     refresh_token = token_info.get("refresh_token")
+    
+    logger.info(f"Access token obtained: {access_token[:20]}...")
+    if refresh_token:
+        logger.info("Refresh token obtained")
 
-    # Redirect to frontend - make sure this matches your frontend URL
     redirect_url = f"http://localhost:3000/#access_token={access_token}&refresh_token={refresh_token}"
+    logger.info(f"Redirecting to: {redirect_url[:50]}...")
     return RedirectResponse(url=redirect_url)
 
 @app.get("/api/refresh_token")
 async def refresh_token(refresh_token: str):
+    logger.info(f"Refreshing token with refresh_token: {refresh_token[:20]}...")
+    
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
         "grant_type": "refresh_token",
@@ -127,10 +142,13 @@ async def refresh_token(refresh_token: str):
     response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
 
     if response.status_code != 200:
+        logger.error(f"Failed to refresh access token: {response.text}")
         raise HTTPException(status_code=400, detail=f"Failed to refresh access token: {response.text}")
 
     token_info = response.json()
     access_token = token_info.get("access_token")
+    logger.info(f"New access token: {access_token[:20]}...")
+    
     return {"access_token": access_token}
 
 def get_spotify_headers(access_token: str):
@@ -138,34 +156,63 @@ def get_spotify_headers(access_token: str):
 
 @app.get("/api/me")
 async def get_me(access_token: str):
+    logger.info(f"Getting user info with token: {access_token[:20]}...")
+    
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
+    
     if response.status_code != 200:
+        logger.error(f"Failed to get user info: {response.status_code} - {response.text}")
         raise HTTPException(status_code=response.status_code, detail=response.json())
+    
+    logger.info("Successfully retrieved user info")
     return response.json()
 
 @app.get("/api/playlists")
 async def get_playlists(access_token: str):
+    logger.info(f"Getting playlists with token: {access_token[:20]}...")
+    
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/playlists", headers=headers)
+    
     if response.status_code != 200:
+        logger.error(f"Failed to get playlists: {response.status_code} - {response.text}")
         raise HTTPException(status_code=response.status_code, detail=response.json())
+    
     return response.json()
 
 @app.get("/api/recently-played")
 async def get_recently_played(access_token: str):
+    logger.info(f"Getting recently played with token: {access_token[:20]}...")
+    
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/player/recently-played?limit=50", headers=headers)
+    
     if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.json())
-    return response.json()
+        logger.error(f"Failed to get recently played: {response.status_code} - {response.text}")
+        raise HTTPException(
+            status_code=response.status_code, 
+            detail={
+                "error": response.json(),
+                "message": "Failed to fetch recently played tracks from Spotify"
+            }
+        )
+    
+    data = response.json()
+    logger.info(f"Retrieved {len(data.get('items', []))} recently played tracks")
+    return data
 
 @app.get("/api/playlist/{playlist_id}")
 async def get_playlist(playlist_id: str, access_token: str):
+    logger.info(f"Getting playlist {playlist_id} with token: {access_token[:20]}...")
+    
     headers = get_spotify_headers(access_token)
     response = requests.get(f"{SPOTIFY_API_BASE_URL}/playlists/{playlist_id}", headers=headers)
+    
     if response.status_code != 200:
+        logger.error(f"Failed to get playlist: {response.status_code} - {response.text}")
         raise HTTPException(status_code=response.status_code, detail=response.json())
+    
     return response.json()
 
 async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
@@ -179,20 +226,27 @@ async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
 async def get_audio_features(track_ids: List[str], access_token: str):
     if not track_ids:
         return []
+    
     headers = get_spotify_headers(access_token)
-    # Spotify API has a limit of 100 IDs per request
     audio_features_list = []
+    
     for i in range(0, len(track_ids), 100):
         batch = track_ids[i:i+100]
         params = {"ids": ",".join(batch)}
         response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features", headers=headers, params=params)
+        
         if response.status_code != 200:
+            logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
             raise HTTPException(status_code=response.status_code, detail=response.json())
+        
         audio_features_list.extend(response.json().get('audio_features', []))
+    
+    logger.info(f"Retrieved audio features for {len(audio_features_list)} tracks")
     return audio_features_list
 
 def calculate_aura(features_list: List[Dict]):
-    features_list = [f for f in features_list if f] # Filter out None values
+    features_list = [f for f in features_list if f]
+    
     if not features_list:
         return {
             "aura": {
@@ -235,6 +289,25 @@ def calculate_aura(features_list: List[Dict]):
 
 @app.get("/api/analyze/playlist/{playlist_id}")
 async def analyze_playlist(playlist_id: str, access_token: str):
+    logger.info(f"Analyzing playlist {playlist_id} with token: {access_token[:20]}...")
+    
+    # Validate token first
+    headers = get_spotify_headers(access_token)
+    test_response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
+    
+    if test_response.status_code != 200:
+        logger.error(f"Token validation failed: {test_response.status_code} - {test_response.text}")
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": {
+                    "status": test_response.status_code,
+                    "message": "Invalid or expired access token",
+                    "spotify_error": test_response.json()
+                }
+            }
+        )
+    
     track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
     try:
         audio_features = await get_audio_features(track_ids, access_token)
@@ -244,6 +317,8 @@ async def analyze_playlist(playlist_id: str, access_token: str):
     analysis_result = calculate_aura(audio_features)
     playlist_details = await get_playlist(playlist_id, access_token)
 
+    logger.info(f"Playlist analysis complete. Aura: {analysis_result['aura']['name']}")
+    
     return {
         "analysis": analysis_result,
         "details": playlist_details
@@ -251,15 +326,100 @@ async def analyze_playlist(playlist_id: str, access_token: str):
 
 @app.get("/api/analyze/recent")
 async def analyze_recent(access_token: str):
-    recent_data = await get_recently_played(access_token)
+    logger.info(f"Analyzing recent tracks with token: {access_token[:20]}...")
+    
+    if not access_token:
+        logger.error("No access token provided")
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": {
+                    "status": 401,
+                    "message": "No access token provided"
+                }
+            }
+        )
+    
+    # Validate token first
+    headers = get_spotify_headers(access_token)
+    test_response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
+    
+    if test_response.status_code != 200:
+        logger.error(f"Token validation failed: {test_response.status_code} - {test_response.text}")
+        
+        error_detail = test_response.json() if test_response.text else {"error": "No response from Spotify"}
+        
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": {
+                    "status": test_response.status_code,
+                    "message": error_detail.get("error", {}).get("message", "Invalid or expired token"),
+                    "spotify_response": error_detail
+                }
+            }
+        )
+    
+    # Get recently played tracks
+    try:
+        recent_data = await get_recently_played(access_token)
+    except HTTPException as e:
+        logger.error(f"Failed to get recently played: {e.detail}")
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": {
+                    "status": 403,
+                    "message": "Failed to get recently played tracks from Spotify",
+                    "original_error": e.detail
+                }
+            }
+        )
+    
+    # Extract track IDs
     track_ids = []
     for item in recent_data['items']:
         if item and item.get('track') and item.get('track').get('id') and item.get('track').get('type') == 'track':
             track_ids.append(item['track']['id'])
+    
+    # Remove duplicates while preserving order
     unique_track_ids = list(dict.fromkeys(track_ids))
-
-    audio_features = await get_audio_features(unique_track_ids, access_token)
+    logger.info(f"Found {len(track_ids)} tracks, {len(unique_track_ids)} unique")
+    
+    if not unique_track_ids:
+        return {
+            "analysis": {
+                "aura": {
+                    "name": "Silent Night",
+                    "description": "You haven't listened to any tracks recently!",
+                    "color": "#9E9E9E"
+                },
+                "avg_features": {}
+            },
+            "details": {"name": "Recently Played", "tracks": recent_data}
+        }
+    
+    # Get audio features
+    try:
+        audio_features = await get_audio_features(unique_track_ids, access_token)
+    except HTTPException as e:
+        logger.error(f"Failed to get audio features: {e.detail}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": {
+                    "status": 500,
+                    "message": "Failed to get audio features from Spotify",
+                    "original_error": e.detail
+                }
+            }
+        )
+    
+    logger.info(f"Got {len(audio_features)} audio features")
+    
+    # Calculate aura
     analysis_result = calculate_aura(audio_features)
+    logger.info(f"Recent analysis complete. Aura: {analysis_result['aura']['name']}")
 
     return {
         "analysis": analysis_result,
@@ -276,4 +436,5 @@ async def calculate_aura_endpoint(request: AuraCalculationRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    logger.info("Starting Aurafy API server...")
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")
