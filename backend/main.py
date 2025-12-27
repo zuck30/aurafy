@@ -1,13 +1,14 @@
-# backend/main.py
+# backend/main.py - COMPLETE UPDATED VERSION
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 import requests
 import urllib.parse
-from typing import List, Dict
+from typing import List, Dict, Optional
 import base64
 from pydantic import BaseModel
 import logging
+import time
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -87,7 +88,8 @@ async def root():
 
 @app.get("/api/login")
 async def login():
-    scope = "user-read-private user-read-email user-read-recently-played playlist-read-private playlist-read-collaborative user-library-read"
+    # ADDED user-read-playback-state scope for audio-features
+    scope = "user-read-private user-read-email user-read-recently-played playlist-read-private playlist-read-collaborative user-library-read user-read-playback-state"
     params = {
         "client_id": SPOTIFY_CLIENT_ID,
         "response_type": "code",
@@ -152,7 +154,10 @@ async def refresh_token(refresh_token: str):
     return {"access_token": access_token}
 
 def get_spotify_headers(access_token: str):
-    return {"Authorization": f"Bearer {access_token}"}
+    return {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
 
 @app.get("/api/me")
 async def get_me(access_token: str):
@@ -225,29 +230,77 @@ async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
 
 async def get_audio_features(track_ids: List[str], access_token: str):
     if not track_ids:
+        logger.info("No track IDs provided for audio features")
         return []
     
     headers = get_spotify_headers(access_token)
     audio_features_list = []
     
+    # Process in batches of 100 (Spotify API limit)
     for i in range(0, len(track_ids), 100):
         batch = track_ids[i:i+100]
-        params = {"ids": ",".join(batch)}
-        response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features", headers=headers, params=params)
         
-        if response.status_code != 200:
-            logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
-            raise HTTPException(status_code=response.status_code, detail=response.json())
+        # Filter out None or empty IDs
+        valid_batch = [tid for tid in batch if tid and isinstance(tid, str) and len(tid) > 10]
         
-        audio_features_list.extend(response.json().get('audio_features', []))
+        if not valid_batch:
+            logger.warning(f"Batch {i//100 + 1} has no valid track IDs")
+            continue
+            
+        params = {"ids": ",".join(valid_batch)}
+        
+        logger.info(f"Requesting audio features for batch {i//100 + 1}, {len(valid_batch)} tracks")
+        
+        try:
+            response = requests.get(
+                f"{SPOTIFY_API_BASE_URL}/audio-features", 
+                headers=headers, 
+                params=params,
+                timeout=30
+            )
+            
+            if response.status_code == 429:
+                # Rate limited - check Retry-After header
+                retry_after = int(response.headers.get('Retry-After', 1))
+                logger.warning(f"Rate limited. Waiting {retry_after} seconds...")
+                time.sleep(retry_after)
+                # Retry the same batch
+                response = requests.get(
+                    f"{SPOTIFY_API_BASE_URL}/audio-features", 
+                    headers=headers, 
+                    params=params,
+                    timeout=30
+                )
+            
+            if response.status_code == 403:
+                logger.error(f"403 Forbidden for audio-features. Response: {response.text}")
+                # Return empty list instead of crashing
+                return []
+                
+            if response.status_code != 200:
+                logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
+                # Return what we have so far instead of crashing
+                break
+                
+            batch_features = response.json().get('audio_features', [])
+            audio_features_list.extend(batch_features)
+            logger.info(f"Got {len(batch_features)} audio features from batch {i//100 + 1}")
+            
+            # Small delay to avoid rate limiting
+            time.sleep(0.1)
+            
+        except Exception as e:
+            logger.error(f"Exception getting audio features for batch {i//100 + 1}: {str(e)}")
+            # Continue with next batch instead of failing completely
     
-    logger.info(f"Retrieved audio features for {len(audio_features_list)} tracks")
+    logger.info(f"Total audio features retrieved: {len(audio_features_list)}")
     return audio_features_list
 
 def calculate_aura(features_list: List[Dict]):
-    features_list = [f for f in features_list if f]
+    # Filter out None values and tracks without features
+    valid_features = [f for f in features_list if f and isinstance(f, dict)]
     
-    if not features_list:
+    if not valid_features:
         return {
             "aura": {
                 "name": "The Mysterious Void",
@@ -257,14 +310,25 @@ def calculate_aura(features_list: List[Dict]):
             "avg_features": {}
         }
 
-    avg_features = {
-        "danceability": sum(f["danceability"] for f in features_list) / len(features_list),
-        "energy": sum(f["energy"] for f in features_list) / len(features_list),
-        "valence": sum(f["valence"] for f in features_list) / len(features_list),
-        "acousticness": sum(f["acousticness"] for f in features_list) / len(features_list),
-        "instrumentalness": sum(f["instrumentalness"] for f in features_list) / len(features_list),
-        "tempo": sum(f["tempo"] for f in features_list) / len(features_list),
-    }
+    # Calculate averages only for features that exist
+    avg_features = {}
+    feature_keys = ["danceability", "energy", "valence", "acousticness", "instrumentalness", "tempo"]
+    
+    for key in feature_keys:
+        values = [f[key] for f in valid_features if key in f and f[key] is not None]
+        if values:
+            avg_features[key] = sum(values) / len(values)
+    
+    # If no features were found
+    if not avg_features:
+        return {
+            "aura": {
+                "name": "Unknown Territory",
+                "description": "We couldn't analyze the audio features of these tracks.",
+                "color": "#9E9E9E"
+            },
+            "avg_features": {}
+        }
 
     matched_aura = None
     for aura in AURAS:
@@ -272,7 +336,11 @@ def calculate_aura(features_list: List[Dict]):
             if aura["conditions"](avg_features):
                 matched_aura = aura
                 break
-        except:
+        except KeyError as e:
+            logger.warning(f"Aura condition missing feature: {e}")
+            continue
+        except Exception as e:
+            logger.warning(f"Error checking aura condition: {e}")
             continue
     
     if not matched_aura:
@@ -309,10 +377,37 @@ async def analyze_playlist(playlist_id: str, access_token: str):
         )
     
     track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
+    
+    if not track_ids:
+        logger.warning(f"No track IDs found for playlist {playlist_id}")
+        return {
+            "analysis": {
+                "aura": {
+                    "name": "Empty Playlist",
+                    "description": "This playlist doesn't contain any tracks to analyze.",
+                    "color": "#9E9E9E"
+                },
+                "avg_features": {}
+            },
+            "details": await get_playlist(playlist_id, access_token)
+        }
+    
+    logger.info(f"Found {len(track_ids)} track IDs")
+    
     try:
         audio_features = await get_audio_features(track_ids, access_token)
-    except HTTPException as e:
-        raise HTTPException(status_code=e.status_code, detail={"original_error": e.detail, "track_ids_sent": track_ids})
+    except Exception as e:
+        logger.error(f"Error getting audio features: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": {
+                    "status": 500,
+                    "message": "Failed to get audio features",
+                    "details": str(e)
+                }
+            }
+        )
 
     analysis_result = calculate_aura(audio_features)
     playlist_details = await get_playlist(playlist_id, access_token)
@@ -378,20 +473,24 @@ async def analyze_recent(access_token: str):
     
     # Extract track IDs
     track_ids = []
-    for item in recent_data['items']:
-        if item and item.get('track') and item.get('track').get('id') and item.get('track').get('type') == 'track':
-            track_ids.append(item['track']['id'])
+    for item in recent_data.get('items', []):
+        if item and item.get('track') and item.get('track').get('id'):
+            track_id = item['track']['id']
+            # Only add valid track IDs
+            if track_id and isinstance(track_id, str) and len(track_id) > 10:
+                track_ids.append(track_id)
     
     # Remove duplicates while preserving order
     unique_track_ids = list(dict.fromkeys(track_ids))
     logger.info(f"Found {len(track_ids)} tracks, {len(unique_track_ids)} unique")
     
     if not unique_track_ids:
+        logger.warning("No valid track IDs found in recently played")
         return {
             "analysis": {
                 "aura": {
                     "name": "Silent Night",
-                    "description": "You haven't listened to any tracks recently!",
+                    "description": "You haven't listened to any tracks recently or we couldn't process them!",
                     "color": "#9E9E9E"
                 },
                 "avg_features": {}
@@ -402,18 +501,20 @@ async def analyze_recent(access_token: str):
     # Get audio features
     try:
         audio_features = await get_audio_features(unique_track_ids, access_token)
-    except HTTPException as e:
-        logger.error(f"Failed to get audio features: {e.detail}")
-        raise HTTPException(
-            status_code=500,
-            detail={
-                "error": {
-                    "status": 500,
-                    "message": "Failed to get audio features from Spotify",
-                    "original_error": e.detail
-                }
-            }
-        )
+    except Exception as e:
+        logger.error(f"Failed to get audio features: {str(e)}")
+        # Return partial results instead of failing completely
+        return {
+            "analysis": {
+                "aura": {
+                    "name": "Partial Analysis",
+                    "description": "We could only partially analyze your recent tracks due to technical limitations.",
+                    "color": "#FF9800"
+                },
+                "avg_features": {}
+            },
+            "details": {"name": "Recently Played", "tracks": recent_data}
+        }
     
     logger.info(f"Got {len(audio_features)} audio features")
     
