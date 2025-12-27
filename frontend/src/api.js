@@ -10,13 +10,13 @@ const refreshToken = async () => {
   if (!refreshToken) {
     throw new Error('No refresh token available');
   }
-  
+
   console.log('🔄 Refreshing token...');
-  
+
   // Use a direct axios call to avoid interceptor loop
   const response = await axios.get(`http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`);
   const { access_token } = response.data;
-  
+
   console.log('✅ Token refreshed');
   localStorage.setItem('token', access_token);
   return access_token;
@@ -32,7 +32,7 @@ api.interceptors.response.use(
     console.error(`❌ API Error: ${error.response?.status || 'No status'} ${error.config?.url || 'No URL'}`);
     
     const originalRequest = error.config;
-    
+
     // If the error is 401/403 and we haven't already retried the request
     if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
       console.log('🔄 Token expired, attempting refresh...');
@@ -52,7 +52,6 @@ api.interceptors.response.use(
         return api(originalRequest);
       } catch (refreshError) {
         console.error('❌ Token refresh failed', refreshError);
-        // Don't redirect, just pass the error along
         return Promise.reject(refreshError);
       }
     }
@@ -61,9 +60,11 @@ api.interceptors.response.use(
   }
 );
 
+// --- API Endpoints ---
+
 export const getMe = (token) => {
   console.log('📞 getMe called with token:', token ? `${token.substring(0, 20)}...` : 'No token');
-  return api.get('/me', { 
+  return api.get('/me', {
     params: { access_token: token },
     timeout: 10000
   });
@@ -71,7 +72,7 @@ export const getMe = (token) => {
 
 export const getPlaylists = (token) => {
   console.log('📞 getPlaylists called');
-  return api.get('/playlists', { 
+  return api.get('/playlists', {
     params: { access_token: token },
     timeout: 10000
   });
@@ -79,7 +80,7 @@ export const getPlaylists = (token) => {
 
 export const getRecentlyPlayed = (token) => {
   console.log('📞 getRecentlyPlayed called');
-  return api.get('/recently-played', { 
+  return api.get('/recently-played', {
     params: { access_token: token },
     timeout: 10000
   });
@@ -87,7 +88,7 @@ export const getRecentlyPlayed = (token) => {
 
 export const getPlaylist = (token, playlistId) => {
   console.log('📞 getPlaylist called for:', playlistId);
-  return api.get(`/playlist/${playlistId}`, { 
+  return api.get(`/playlist/${playlistId}`, {
     params: { access_token: token },
     timeout: 10000
   });
@@ -95,7 +96,7 @@ export const getPlaylist = (token, playlistId) => {
 
 export const analyzePlaylist = (token, playlistId) => {
   console.log('📞 analyzePlaylist called for:', playlistId);
-  return api.get(`/analyze/playlist/${playlistId}`, { 
+  return api.get(`/analyze/playlist/${playlistId}`, {
     params: { access_token: token },
     timeout: 15000
   });
@@ -104,14 +105,14 @@ export const analyzePlaylist = (token, playlistId) => {
 export const analyzeRecent = (token) => {
   console.log('📞 analyzeRecent called');
   console.log('Token length:', token?.length || 0);
-  
+
   if (!token) {
     return Promise.reject(new Error('No token provided'));
   }
 
-  return api.get('/analyze/recent', { 
-    params: { 
-      access_token: token 
+  return api.get('/analyze/recent', {
+    params: {
+      access_token: token
     },
     timeout: 20000,
     validateStatus: function (status) {
@@ -142,6 +143,15 @@ export const analyzeRecent = (token) => {
       console.error('Error:', error.message);
     }
     throw error;
+  });
+};
+
+// NEW: Analyze a single track
+export const analyzeTrack = (token, trackId) => {
+  console.log('📞 analyzeTrack called for track ID:', trackId);
+  return api.get(`/analyze/track/${trackId}`, {
+    params: { access_token: token },
+    timeout: 15000
   });
 };
 
