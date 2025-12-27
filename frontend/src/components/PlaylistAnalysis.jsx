@@ -10,57 +10,655 @@ import {
   VStack,
   Card,
   CardBody,
-  Image,
   Progress,
   Button,
   Icon,
   HStack,
   Badge,
+  Divider,
+  Image,
+  keyframes,
+  Grid,
+  GridItem,
+  IconButton,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  useToast,
   useBreakpointValue,
+  AspectRatio,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaMusic } from 'react-icons/fa';
+import {
+  FaArrowLeft,
+  FaMusic,
+  FaShareAlt,
+  FaWhatsapp,
+  FaInstagram,
+  FaTwitter,
+  FaCopy,
+  FaCheck,
+  FaFacebook,
+  FaFire,
+  FaHeart,
+  FaMountain,
+  FaBolt,
+  FaDownload,
+  FaHeadphones,
+  FaSpotify,
+  FaVolumeUp,
+  FaStar,
+  FaTachometerAlt,
+} from 'react-icons/fa';
 import { analyzePlaylist } from '../api';
 import { useAuth } from '../App';
+import logo from './aurafy.png';
+import html2canvas from 'html2canvas';
 
-const FeatureProgress = ({ label, value }) => (
-  <Box>
-    <HStack justify="space-between" mb={2}>
-      <Text
-        textTransform="capitalize"
-        fontWeight="500"
-        color="#FFFFFF"
-        fontSize={{ base: 'sm', md: 'md' }}
-      >
-        {label}
-      </Text>
-      <Badge
-        bg="#1DB954"
-        color="black"
-        fontSize={{ base: 'xs', md: 'sm' }}
-        px={3}
-        py={1}
-        borderRadius="full"
-        fontWeight="bold"
-      >
-        {(value * 100).toFixed(0)}%
-      </Badge>
-    </HStack>
-    <Progress
-      value={value * 100}
-      colorScheme="green"
-      size="md"
-      borderRadius="full"
-      bg="#282828"
-      sx={{
-        '& > div': {
-          bg: '#1DB954',
-          transition: 'width 1s ease',
-          boxShadow: '0 0 15px rgba(29,185,84,0.4)',
-        },
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+`;
+
+const FeatureProgress = ({ label, value, icon }) => {
+  const IconComponent = icon;
+  const percentage = (value * 100).toFixed(0);
+  
+  return (
+    <Box
+      bg="rgba(18, 18, 18, 0.7)"
+      borderRadius="xl"
+      p={5}
+      border="1px solid"
+      borderColor="rgba(255, 255, 255, 0.1)"
+      backdropFilter="blur(10px)"
+      transition="all 0.3s"
+      _hover={{
+        transform: 'translateY(-4px)',
+        borderColor: '#1DB954',
+        boxShadow: '0 10px 30px rgba(29, 185, 84, 0.2)',
       }}
-    />
-  </Box>
-);
+    >
+      <HStack spacing={4} mb={4}>
+        <Box
+          p={2}
+          bg="rgba(29, 185, 84, 0.1)"
+          borderRadius="lg"
+          border="1px solid rgba(29, 185, 84, 0.3)"
+        >
+          <Icon as={IconComponent} color="#1DB954" boxSize={5} />
+        </Box>
+        <VStack align="start" spacing={0} flex={1}>
+          <Text
+            textTransform="uppercase"
+            fontWeight="600"
+            color="#FFFFFF"
+            fontSize="sm"
+            letterSpacing="0.5px"
+          >
+            {label}
+          </Text>
+          <Badge
+            bg="#1DB954"
+            color="black"
+            fontSize="xs"
+            px={3}
+            py={1}
+            borderRadius="full"
+            fontWeight="bold"
+          >
+            {percentage}%
+          </Badge>
+        </VStack>
+      </HStack>
+      <Progress
+        value={value * 100}
+        colorScheme="green"
+        size="sm"
+        borderRadius="full"
+        bg="rgba(255, 255, 255, 0.1)"
+        sx={{
+          '& > div': {
+            bg: 'linear-gradient(90deg, #1DB954, #1ed760)',
+            transition: 'width 1s ease',
+            boxShadow: '0 0 10px rgba(29,185,84,0.4)',
+          },
+        }}
+      />
+    </Box>
+  );
+};
+
+const ShareModal = ({ isOpen, onClose, auraData, avgFeatures, playlistDetails, playlistImage }) => {
+  const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const toast = useToast();
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const shareText = `🎵 My "${playlistDetails.name}" playlist's Music Aura is "${auraData.name}"! Discover your musical vibe with Aurafy.`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    toast({
+      title: "Link copied!",
+      description: "Share link copied to clipboard",
+      status: "success",
+      duration: 2000,
+      isClosable: true,
+      position: "top",
+    });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareToWhatsApp = () => {
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`, '_blank');
+  };
+
+  const shareToInstagram = () => {
+    navigator.clipboard.writeText(shareText + ' ' + shareUrl);
+    toast({
+      title: "Link copied!",
+      description: "Paste it in your Instagram story or post",
+      status: "info",
+      duration: 3000,
+      isClosable: true,
+      position: "top",
+    });
+  };
+
+  const shareToTwitter = () => {
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+  };
+
+  const shareToFacebook = () => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`, '_blank');
+  };
+
+  const downloadAsImage = async () => {
+    setDownloading(true);
+    let offscreenDiv = null;
+
+    try {
+      // Mobile-optimized dimensions (9:16 aspect ratio for stories)
+      const width = 1080; // Standard mobile width
+      const height = 1920; // Standard mobile height
+      
+      offscreenDiv = document.createElement('div');
+      offscreenDiv.style.position = 'fixed';
+      offscreenDiv.style.left = '-9999px';
+      offscreenDiv.style.top = '-9999px';
+      offscreenDiv.style.width = `${width}px`;
+      offscreenDiv.style.height = `${height}px`;
+      offscreenDiv.style.background = 'linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%)';
+      offscreenDiv.style.borderRadius = '32px';
+      offscreenDiv.style.color = 'white';
+      offscreenDiv.style.fontFamily = '"Circular Std", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      offscreenDiv.style.boxShadow = '0 40px 100px rgba(0,0,0,0.8)';
+      offscreenDiv.style.overflow = 'hidden';
+      offscreenDiv.style.display = 'flex';
+      offscreenDiv.style.flexDirection = 'column';
+
+      const content = `
+        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; padding: 60px 40px; height: 100%;">
+          <!-- Top Section: Logo and Title -->
+          <div style="text-align: center; margin-bottom: 40px;">
+            <div style="display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 30px;">
+              <div style="width: 50px; height: 50px; border-radius: 14px; background: linear-gradient(135deg, #1DB954, #1ed760); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 25px rgba(29,185,84,0.4);">
+                <svg width="25" height="25" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="white"/>
+                </svg>
+              </div>
+              <div style="font-size: 28px; font-weight: 700; color: #1DB954; letter-spacing: 2px;">
+                AURAFY
+              </div>
+            </div>
+            <div style="font-size: 18px; color: #b3b3b3; letter-spacing: 1px; margin-bottom: 20px;">
+              PLAYLIST ANALYSIS
+            </div>
+          </div>
+
+          <!-- Playlist Info with Image -->
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 25px; margin-bottom: 40px;">
+            <div style="width: 200px; height: 200px; border-radius: 24px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+              ${playlistImage ? 
+                `<img src="${playlistImage}" alt="${playlistDetails.name}" style="width: 100%; height: 100%; object-fit: cover;" />` : 
+                `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #282828, #1a1a1a); display: flex; align-items: center; justify-content: center;">
+                  <svg width="70" height="70" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  </svg>
+                </div>`
+              }
+            </div>
+            
+            <div style="text-align: center;">
+              <div style="font-size: 36px; font-weight: 900; color: white; line-height: 1.1; margin-bottom: 15px; letter-spacing: -0.5px;">
+                ${playlistDetails.name}
+              </div>
+              <div style="font-size: 18px; color: #666; line-height: 1.4; margin-bottom: 20px;">
+                ${playlistDetails.description || 'No description available'}
+              </div>
+              
+              <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <div style="background: rgba(29,185,84,0.1); border: 1px solid rgba(29,185,84,0.3); padding: 6px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #1DB954;">
+                  ${playlistDetails.tracks?.total || 0} Tracks
+                </div>
+                <div style="background: rgba(29,185,84,0.1); border: 1px solid rgba(29,185,84,0.3); padding: 6px 16px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #1DB954;">
+                  By ${playlistDetails.owner?.display_name || 'Unknown'}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Aura Display -->
+          <div style="text-align: center; margin-bottom: 40px;">
+            <div style="font-size: 18px; color: #1DB954; font-weight: 600; letter-spacing: 1.5px; margin-bottom: 15px;">
+              MUSICAL AURA
+            </div>
+            <div style="font-size: 56px; font-weight: 900; line-height: 1; margin-bottom: 20px; color: white; letter-spacing: -1.5px; background: linear-gradient(90deg, #FFFFFF, #1DB954); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+              ${auraData.name}
+            </div>
+            <div style="font-size: 20px; color: #b3b3b3; line-height: 1.5; max-width: 800px; margin: 0 auto;">
+              ${auraData.description}
+            </div>
+          </div>
+
+          <!-- Audio Features Grid -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 40px;">
+            ${avgFeatures.danceability !== undefined ? `
+              <div style="background: rgba(18, 18, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(8px);">
+                <div style="width: 40px; height: 40px; background: rgba(29,185,84,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 1px solid rgba(29,185,84,0.3);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6h16v3H4zM4 15h16v3H4z"/>
+                    <circle cx="7" cy="10" r="1"/>
+                    <circle cx="17" cy="10" r="1"/>
+                    <circle cx="7" cy="19" r="1"/>
+                    <circle cx="17" cy="19" r="1"/>
+                  </svg>
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 6px;">
+                  Danceability
+                </div>
+                <div style="font-size: 28px; font-weight: 900; color: #1DB954;">
+                  ${(avgFeatures.danceability * 100).toFixed(0)}%
+                </div>
+              </div>
+            ` : ''}
+            
+            ${avgFeatures.energy !== undefined ? `
+              <div style="background: rgba(18, 18, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(8px);">
+                <div style="width: 40px; height: 40px; background: rgba(29,185,84,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 1px solid rgba(29,185,84,0.3);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M11 21h-1l1-7H7.5c-.58 0-.57-.32-.38-.66.19-.34.05-.08.07-.12C8.48 10.94 10.42 7.54 13 3h1l-1 7h3.5c.49 0 .56.33.47.51l-.07.15C12.96 17.55 11 21 11 21z"/>
+                  </svg>
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 6px;">
+                  Energy
+                </div>
+                <div style="font-size: 28px; font-weight: 900; color: #1DB954;">
+                  ${(avgFeatures.energy * 100).toFixed(0)}%
+                </div>
+              </div>
+            ` : ''}
+            
+            ${avgFeatures.valence !== undefined ? `
+              <div style="background: rgba(18, 18, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(8px);">
+                <div style="width: 40px; height: 40px; background: rgba(29,185,84,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 1px solid rgba(29,185,84,0.3);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 6px;">
+                  Positivity
+                </div>
+                <div style="font-size: 28px; font-weight: 900; color: #1DB954;">
+                  ${(avgFeatures.valence * 100).toFixed(0)}%
+                </div>
+              </div>
+            ` : ''}
+            
+            ${avgFeatures.acousticness !== undefined ? `
+              <div style="background: rgba(18, 18, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(8px);">
+                <div style="width: 40px; height: 40px; background: rgba(29,185,84,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 1px solid rgba(29,185,84,0.3);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  </svg>
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 6px;">
+                  Acousticness
+                </div>
+                <div style="font-size: 28px; font-weight: 900; color: #1DB954;">
+                  ${(avgFeatures.acousticness * 100).toFixed(0)}%
+                </div>
+              </div>
+            ` : ''}
+            
+            ${avgFeatures.instrumentalness !== undefined ? `
+              <div style="background: rgba(18, 18, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(8px);">
+                <div style="width: 40px; height: 40px; background: rgba(29,185,84,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 1px solid rgba(29,185,84,0.3);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm2 14h-3v3h-2v-3H8v-2h3v-3h2v3h3v2zm-3-7V3.5L18.5 9H13z"/>
+                  </svg>
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 6px;">
+                  Instrumentalness
+                </div>
+                <div style="font-size: 28px; font-weight: 900; color: #1DB954;">
+                  ${(avgFeatures.instrumentalness * 100).toFixed(0)}%
+                </div>
+              </div>
+            ` : ''}
+            
+            ${avgFeatures.tempo !== undefined ? `
+              <div style="background: rgba(18, 18, 18, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 20px; text-align: center; backdrop-filter: blur(8px);">
+                <div style="width: 40px; height: 40px; background: rgba(29,185,84,0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; border: 1px solid rgba(29,185,84,0.3);">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#1DB954" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 8v8l5-4-5-4zm11-5v18h-18v-18h18zm-2 16v-14h-14v14h14z"/>
+                  </svg>
+                </div>
+                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 6px;">
+                  Tempo
+                </div>
+                <div style="font-size: 28px; font-weight: 900; color: #1DB954;">
+                  ${avgFeatures.tempo.toFixed(0)} BPM
+                </div>
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- Footer -->
+          <div style="text-align: center; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="font-size: 18px; font-weight: 700; color: #1DB954; letter-spacing: 0.5px; margin-bottom: 10px;">
+              aurafy.app
+            </div>
+            <div style="font-size: 14px; color: #666; letter-spacing: 0.5px;">
+              Powered by Spotify • Discover Your Music Aura
+            </div>
+          </div>
+        </div>
+      `;
+
+      offscreenDiv.innerHTML = content;
+      document.body.appendChild(offscreenDiv);
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const canvas = await html2canvas(offscreenDiv, {
+        scale: 3, // High resolution for mobile
+        useCORS: true,
+        backgroundColor: null,
+        logging: false,
+        width: width,
+        height: height,
+        onclone: (clonedDoc) => {
+          const div = clonedDoc.querySelector('div');
+          if (div) {
+            div.style.visibility = 'visible';
+          }
+        },
+        imageTimeout: 15000,
+      });
+
+      const link = document.createElement('a');
+      const fileName = `aura-${playlistDetails.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}-${auraData.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`;
+      link.download = fileName;
+      link.href = canvas.toDataURL('image/png', 1.0);
+      link.click();
+
+      toast({
+        title: "Image saved!",
+        description: "Perfect for sharing",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Image generation error:', error);
+      toast({
+        title: "Failed to generate image",
+        description: "Please try again or take a screenshot",
+        status: "error",
+        duration: 4000,
+      });
+    } finally {
+      setDownloading(false);
+      if (offscreenDiv && document.body.contains(offscreenDiv)) {
+        document.body.removeChild(offscreenDiv);
+      }
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      isCentered
+      closeOnOverlayClick={true}
+      closeOnEsc={true}
+      motionPreset="slideInBottom"
+    >
+      <ModalOverlay bg="blackAlpha.800" backdropFilter="blur(20px)" />
+      <ModalContent
+        bg="rgba(18, 18, 18, 0.95)"
+        border="1px solid rgba(255, 255, 255, 0.1)"
+        backdropFilter="blur(30px)"
+        borderRadius="2xl"
+        mx={4}
+        maxW="600px"
+      >
+        <ModalHeader color="white" borderBottom="1px solid rgba(255, 255, 255, 0.1)" fontSize="2xl" fontWeight="900">
+          Share Your Playlist Aura
+        </ModalHeader>
+        <ModalCloseButton
+          color="white"
+          _hover={{ bg: 'rgba(255, 255, 255, 0.1)' }}
+          size="lg"
+        />
+        <ModalBody py={8}>
+          <VStack spacing={8}>
+            {/* Preview Section */}
+            <Card
+              bg="rgba(18, 18, 18, 0.7)"
+              borderRadius="2xl"
+              border="1px solid rgba(255, 255, 255, 0.1)"
+              backdropFilter="blur(20px)"
+              w="full"
+              overflow="hidden"
+            >
+              <CardBody p={6}>
+                <VStack spacing={4} align="center">
+                  {playlistImage && (
+                    <AspectRatio ratio={1} w="120px" borderRadius="xl" overflow="hidden">
+                      <Image
+                        src={playlistImage}
+                        alt={playlistDetails.name}
+                        objectFit="cover"
+                      />
+                    </AspectRatio>
+                  )}
+                  <Text color="#1DB954" fontSize="sm" fontWeight="600" letterSpacing="1px">
+                    PREVIEW
+                  </Text>
+                  <Heading size="lg" color="white" textAlign="center">
+                    {playlistDetails.name}
+                  </Heading>
+                  <Text color="gray.300" fontSize="md" textAlign="center">
+                    Aura: <Badge bg="#1DB954" color="black" fontSize="md" px={3} py={1} borderRadius="full" fontWeight="bold">{auraData.name}</Badge>
+                  </Text>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            <Text color="gray.300" textAlign="center" fontSize="md">
+              Share your playlist's unique music vibe with friends!
+            </Text>
+
+            {/* Social Sharing Grid */}
+            <Grid templateColumns="repeat(3, 1fr)" gap={6} w="full">
+              <VStack spacing={2}>
+                <IconButton
+                  aria-label="Share to Instagram"
+                  icon={<FaInstagram />}
+                  size="lg"
+                  w="70px"
+                  h="70px"
+                  bg="rgba(225, 48, 108, 0.15)"
+                  color="#E1306C"
+                  border="2px solid rgba(225, 48, 108, 0.3)"
+                  borderRadius="xl"
+                  _hover={{ 
+                    bg: '#E1306C', 
+                    color: 'white', 
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 10px 30px rgba(225, 48, 108, 0.4)'
+                  }}
+                  onClick={shareToInstagram}
+                />
+                <Text fontSize="xs" color="gray.400" fontWeight="500">Instagram</Text>
+              </VStack>
+
+              <VStack spacing={2}>
+                <IconButton
+                  aria-label="Download Image"
+                  icon={downloading ? <Spinner size="sm" /> : <FaDownload />}
+                  size="lg"
+                  w="70px"
+                  h="70px"
+                  bg="rgba(255, 193, 7, 0.15)"
+                  color="#FFC107"
+                  border="2px solid rgba(255, 193, 7, 0.3)"
+                  borderRadius="xl"
+                  _hover={{ 
+                    bg: '#FFC107', 
+                    color: 'black', 
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 10px 30px rgba(255, 193, 7, 0.4)'
+                  }}
+                  onClick={downloadAsImage}
+                  isLoading={downloading}
+                  loadingText="Creating..."
+                  disabled={downloading}
+                />
+                <Text fontSize="xs" color="gray.400" fontWeight="500">Share Image</Text>
+              </VStack>
+
+              <VStack spacing={2}>
+                <IconButton
+                  aria-label="Copy Link"
+                  icon={copied ? <FaCheck /> : <FaCopy />}
+                  size="lg"
+                  w="70px"
+                  h="70px"
+                  bg="rgba(29, 185, 84, 0.15)"
+                  color="#1DB954"
+                  border="2px solid rgba(29, 185, 84, 0.3)"
+                  borderRadius="xl"
+                  _hover={{ 
+                    bg: '#1DB954', 
+                    color: 'white', 
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 10px 30px rgba(29, 185, 84, 0.4)'
+                  }}
+                  onClick={handleCopyLink}
+                />
+                <Text fontSize="xs" color="gray.400" fontWeight="500">Copy Link</Text>
+              </VStack>
+
+              <VStack spacing={2}>
+                <IconButton
+                  aria-label="Share to WhatsApp"
+                  icon={<FaWhatsapp />}
+                  size="lg"
+                  w="70px"
+                  h="70px"
+                  bg="rgba(37, 211, 102, 0.15)"
+                  color="#25D366"
+                  border="2px solid rgba(37, 211, 102, 0.3)"
+                  borderRadius="xl"
+                  _hover={{ 
+                    bg: '#25D366', 
+                    color: 'white', 
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 10px 30px rgba(37, 211, 102, 0.4)'
+                  }}
+                  onClick={shareToWhatsApp}
+                />
+                <Text fontSize="xs" color="gray.400" fontWeight="500">WhatsApp</Text>
+              </VStack>
+
+              <VStack spacing={2}>
+                <IconButton
+                  aria-label="Share to Twitter"
+                  icon={<FaTwitter />}
+                  size="lg"
+                  w="70px"
+                  h="70px"
+                  bg="rgba(29, 161, 242, 0.15)"
+                  color="#1DA1F2"
+                  border="2px solid rgba(29, 161, 242, 0.3)"
+                  borderRadius="xl"
+                  _hover={{ 
+                    bg: '#1DA1F2', 
+                    color: 'white', 
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 10px 30px rgba(29, 161, 242, 0.4)'
+                  }}
+                  onClick={shareToTwitter}
+                />
+                <Text fontSize="xs" color="gray.400" fontWeight="500">Twitter</Text>
+              </VStack>
+
+              <VStack spacing={2}>
+                <IconButton
+                  aria-label="Share to Facebook"
+                  icon={<FaFacebook />}
+                  size="lg"
+                  w="70px"
+                  h="70px"
+                  bg="rgba(24, 119, 242, 0.15)"
+                  color="#1877F2"
+                  border="2px solid rgba(24, 119, 242, 0.3)"
+                  borderRadius="xl"
+                  _hover={{ 
+                    bg: '#1877F2', 
+                    color: 'white', 
+                    transform: 'scale(1.1)',
+                    boxShadow: '0 10px 30px rgba(24, 119, 242, 0.4)'
+                  }}
+                  onClick={shareToFacebook}
+                />
+                <Text fontSize="xs" color="gray.400" fontWeight="500">Facebook</Text>
+              </VStack>
+            </Grid>
+
+            {/* Image Info Box */}
+            <Box
+              bg="rgba(29, 185, 84, 0.05)"
+              p={4}
+              borderRadius="xl"
+              border="1px solid rgba(29, 185, 84, 0.2)"
+              w="full"
+            >
+              <VStack spacing={2} align="start">
+                <Text color="#1DB954" fontSize="sm" fontWeight="600">
+                  Beautiful shareable image includes:
+                </Text>
+                <HStack spacing={2} flexWrap="wrap">
+                  <Badge bg="rgba(29, 185, 84, 0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Playlist Art</Badge>
+                  <Badge bg="rgba(29, 185, 84, 0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Audio Features</Badge>
+                  <Badge bg="rgba(29, 185, 84, 0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Music Aura</Badge>
+                  <Badge bg="rgba(29, 185, 84, 0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Mobile Optimized</Badge>
+                </HStack>
+              </VStack>
+            </Box>
+          </VStack>
+        </ModalBody>
+      </ModalContent>
+    </Modal>
+  );
+};
 
 const PlaylistAnalysis = () => {
   const { id } = useParams();
@@ -68,32 +666,23 @@ const PlaylistAnalysis = () => {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const toast = useToast();
   const isMobile = useBreakpointValue({ base: true, md: false });
-
-  useEffect(() => {
-    console.log('🔍 PlaylistAnalysis mounted');
-    console.log('Playlist ID:', id);
-    console.log('Token from useAuth:', token ? `${token.substring(0, 20)}...` : 'No token');
-  }, [id, token]);
 
   useEffect(() => {
     const fetchAnalysis = async () => {
       if (!token) {
-        console.error('❌ No token available');
         setError("No authentication token found. Please login again.");
         setLoading(false);
         return;
       }
 
       if (!id) {
-        console.error('❌ No playlist ID provided');
         setError("No playlist ID provided.");
         setLoading(false);
         return;
       }
-
-      console.log('🚀 Starting playlist analysis for ID:', id);
-      console.log('Using token:', token.substring(0, 30) + '...');
 
       try {
         setLoading(true);
@@ -106,66 +695,36 @@ const PlaylistAnalysis = () => {
       } catch (err) {
         console.error('❌ Playlist analysis failed:', err);
         
-        if (err.response) {
-          console.error('Response status:', err.response.status);
-          console.error('Response data:', err.response.data);
-          
-          if (err.response.status === 403) {
-            // Token expired - try to refresh
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (refreshToken) {
-              try {
-                console.log('🔄 Attempting token refresh...');
-                const refreshRes = await fetch(
-                  `http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`
-                );
+        if (err.response?.status === 403) {
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            try {
+              console.log('🔄 Attempting token refresh...');
+              const refreshRes = await fetch(
+                `http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`
+              );
+              
+              if (refreshRes.ok) {
+                const data = await refreshRes.json();
+                const newToken = data.access_token;
+                localStorage.setItem('token', newToken);
                 
-                if (refreshRes.ok) {
-                  const data = await refreshRes.json();
-                  const newToken = data.access_token;
-                  localStorage.setItem('token', newToken);
-                  
-                  // Retry the analysis
-                  console.log('🔄 Retrying analysis with new token...');
-                  const retryRes = await analyzePlaylist(newToken, id);
-                  setAnalysis(retryRes.data);
-                  return;
-                }
-              } catch (refreshErr) {
-                console.error('Token refresh failed:', refreshErr);
+                const retryRes = await analyzePlaylist(newToken, id);
+                setAnalysis(retryRes.data);
+                return;
               }
+            } catch (refreshErr) {
+              console.error('Token refresh failed:', refreshErr);
             }
-            
-            setError({
-              title: "Session Expired",
-              message: "Your session has expired. Please log in again.",
-              details: err.response.data
-            });
-          } else if (err.response.status === 404) {
-            setError({
-              title: "Playlist Not Found",
-              message: "The playlist you're looking for doesn't exist or you don't have access to it.",
-              details: err.response.data
-            });
-          } else {
-            setError({
-              title: `Error ${err.response.status}`,
-              message: "Failed to analyze playlist.",
-              details: err.response.data
-            });
           }
+          
+          setError("Session expired. Please log in again.");
+        } else if (err.response?.status === 404) {
+          setError("Playlist not found or you don't have access to it.");
         } else if (err.request) {
-          setError({
-            title: "Connection Error",
-            message: "No response from server. Is the backend running?",
-            details: null
-          });
+          setError("No response from server. Please check your connection.");
         } else {
-          setError({
-            title: "Request Error",
-            message: err.message || "An unexpected error occurred.",
-            details: null
-          });
+          setError("Failed to analyze playlist. Please try again.");
         }
       } finally {
         setLoading(false);
@@ -178,113 +737,67 @@ const PlaylistAnalysis = () => {
   if (loading) {
     return (
       <Center minH="100vh" bg="#000">
-        <VStack spacing={6}>
-          <Spinner size="xl" color="#1DB954" thickness="4px" />
-          <Text color="#B3B3B3" fontSize={{ base: 'lg', md: 'xl' }} fontWeight="medium">
-            Analyzing your playlist's aura...
-          </Text>
+        <VStack spacing={8}>
+          <Box
+            w="80px"
+            h="80px"
+            animation={`${float} 3s ease-in-out infinite`}
+          >
+            <Image
+              src={logo}
+              alt="Aurafy Logo"
+              w="100%"
+              h="100%"
+              objectFit="contain"
+              filter="drop-shadow(0 0 20px rgba(29,185,84,0.3))"
+            />
+          </Box>
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#1DB954" thickness="4px" />
+            <Heading
+              size="lg"
+              fontWeight="900"
+              letterSpacing="-1px"
+              bgGradient="linear(to-r, white, #1db954)"
+              bgClip="text"
+            >
+              Analyzing Playlist Aura
+            </Heading>
+            <Text color="gray.400" fontSize="md">
+              Scanning playlist tracks and patterns...
+            </Text>
+          </VStack>
         </VStack>
       </Center>
     );
   }
 
-  if (error || !analysis) {
+  if (error || !analysis?.analysis) {
     return (
-      <Center minH="100vh" bg="#000">
-        <VStack spacing={8} maxW="600px" px={4}>
-          <Heading
-            size={{ base: 'xl', md: '2xl' }}
-            fontWeight="900"
-            color="#FFFFFF"
-            letterSpacing="-1px"
-            textAlign="center"
-          >
-            {error?.title || "Something Went Wrong"}
+      <Center minH="100vh" bg="#000" p={6}>
+        <VStack spacing={8} maxW="500px" textAlign="center">
+          <Icon as={FaHeadphones} color="#1DB954" boxSize={12} />
+          <Heading size="xl" fontWeight="900" color="white">
+            Unable to Load Analysis
           </Heading>
-          
-          <Text color="#B3B3B3" fontSize={{ base: 'md', md: 'lg' }} textAlign="center">
-            {error?.message || "Could not load analysis data for this playlist."}
+          <Text color="gray.300" fontSize="lg">
+            {error}
           </Text>
-          
-          {error?.details && (
-            <Box 
-              bg="#1a1a1a" 
-              p={4} 
-              borderRadius="lg" 
-              border="1px solid #333"
-              width="100%"
-            >
-              <Text color="#ff3333" fontWeight="bold" mb={2} fontSize="sm">
-                Error Details:
-              </Text>
-              <Text 
-                color="#B3B3B3" 
-                fontSize="xs" 
-                fontFamily="monospace" 
-                whiteSpace="pre-wrap"
-                overflowX="auto"
-              >
-                {typeof error.details === 'string' 
-                  ? error.details 
-                  : JSON.stringify(error.details, null, 2)}
-              </Text>
-            </Box>
-          )}
-          
-          <VStack spacing={4} pt={4}>
-            <Button
-              as={RouterLink}
-              to="/analyze/playlists"
-              leftIcon={<Icon as={FaArrowLeft} />}
-              size="lg"
-              bg="#1DB954"
-              color="black"
-              borderRadius="full"
-              fontWeight="bold"
-              px={8}
-              py={6}
-              _hover={{
-                bg: '#1ed760',
-                transform: 'scale(1.05)',
-              }}
-              transition="all 0.3s"
-            >
-              Back to Playlists
-            </Button>
-            
-            {(error?.title === "Session Expired" || error?.title?.includes("403")) && (
-              <Button
-                onClick={() => {
-                  localStorage.removeItem('token');
-                  localStorage.removeItem('refreshToken');
-                  window.location.href = '/login';
-                }}
-                size="md"
-                variant="outline"
-                color="#1DB954"
-                borderColor="#1DB954"
-                borderRadius="full"
-                _hover={{ bg: '#1DB954', color: 'black' }}
-              >
-                Log In Again
-              </Button>
-            )}
-            
-            <Button
-              onClick={() => {
-                const currentToken = localStorage.getItem('token');
-                if (currentToken && id) {
-                  window.open(`http://localhost:8000/api/analyze/playlist/${id}?access_token=${currentToken}`, '_blank');
-                }
-              }}
-              size="sm"
-              variant="ghost"
-              color="#B3B3B3"
-              _hover={{ color: '#1DB954' }}
-            >
-              Test API Directly
-            </Button>
-          </VStack>
+          <Button
+            as={RouterLink}
+            to="/analyze/playlists"
+            leftIcon={<Icon as={FaArrowLeft} />}
+            size="lg"
+            bg="#1DB954"
+            color="black"
+            borderRadius="full"
+            fontWeight="bold"
+            px={8}
+            _hover={{ bg: '#1ed760', transform: 'scale(1.05)' }}
+            transition="all 0.3s"
+          >
+            Back to Playlists
+          </Button>
         </VStack>
       </Center>
     );
@@ -292,6 +805,10 @@ const PlaylistAnalysis = () => {
 
   const { analysis: analysisResult, details: playlistDetails } = analysis;
   const { aura, avg_features } = analysisResult;
+  const auraName = aura?.name || "Unknown Vibe";
+  const auraDescription = aura?.description || "Your playlist's musical aura is still forming...";
+  const auraColor = aura?.color || "#1DB954";
+  const playlistImage = playlistDetails.images?.[0]?.url;
 
   return (
     <Box
@@ -301,285 +818,416 @@ const PlaylistAnalysis = () => {
       color="#FFFFFF"
       fontFamily="'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     >
-      <Button
-        as={RouterLink}
-        to="/analyze/playlists"
-        leftIcon={<Icon as={FaArrowLeft} />}
-        mb={{ base: 6, md: 8 }}
-        size="md"
-        bg="#1DB954"
-        color="black"
-        borderRadius="full"
-        fontWeight="bold"
-        px={6}
-        _hover={{
-          bg: '#1ed760',
-          transform: 'scale(1.05)',
-        }}
-        transition="all 0.3s"
-      >
-        Back to Playlists
-      </Button>
-
-      <Flex
-        direction={{ base: 'column', lg: 'row' }}
-        gap={{ base: 6, md: 8 }}
-      >
-        {/* Left Column: Playlist Info + Aura */}
-        <VStack flex={1} spacing={{ base: 6, md: 8 }} align="stretch">
-          {/* Playlist Info Card */}
-          <Card
-            bg="#121212"
-            borderRadius="xl"
-            overflow="hidden"
-            border="1px solid #282828"
-            transition="all 0.3s"
-            _hover={{ transform: 'translateY(-4px)', boxShadow: '0 20px 40px rgba(29,185,84,0.15)' }}
-          >
-            <CardBody p={{ base: 6, md: 8 }}>
-              <Flex
-                direction={{ base: 'column', sm: 'row' }}
-                align={{ base: 'center', sm: 'start' }}
-                gap={{ base: 4, sm: 6 }}
-              >
-                {playlistDetails.images && playlistDetails.images.length > 0 ? (
-                  <Image
-                    boxSize={{ base: '140px', md: '180px' }}
-                    src={playlistDetails.images[0]?.url}
-                    alt={playlistDetails.name}
-                    borderRadius="md"
-                    objectFit="cover"
-                    boxShadow="0 4px 16px rgba(0,0,0,0.4)"
-                  />
-                ) : (
-                  <Box
-                    boxSize={{ base: '140px', md: '180px' }}
-                    bg="#282828"
-                    borderRadius="md"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    boxShadow="0 4px 16px rgba(0,0,0,0.4)"
-                  >
-                    <Icon as={FaMusic} color="#1DB954" boxSize={12} />
-                  </Box>
-                )}
-                <VStack align={{ base: 'center', sm: 'start' }} spacing={2} flex={1}>
-                  <Heading
-                    size={{ base: 'lg', md: 'xl' }}
-                    fontWeight="900"
-                    letterSpacing="-0.5px"
-                    color="#FFFFFF"
-                    textAlign={{ base: 'center', sm: 'left' }}
-                  >
-                    {playlistDetails.name || 'Unnamed Playlist'}
-                  </Heading>
-                  <Text
-                    fontSize={{ base: 'md', md: 'lg' }}
-                    color="#B3B3B3"
-                    noOfLines={3}
-                    textAlign={{ base: 'center', sm: 'left' }}
-                  >
-                    {playlistDetails.description || 'No description available'}
-                  </Text>
-                  <HStack spacing={3} flexWrap="wrap" justify={{ base: 'center', sm: 'start' }}>
-                    <Badge bg="#1DB954" color="black" fontSize="sm" px={3} py={1} borderRadius="full">
-                      {playlistDetails.tracks?.total || 0} tracks
-                    </Badge>
-                    <Badge bg="#282828" color="#B3B3B3" fontSize="sm" px={3} py={1} borderRadius="full">
-                      By {playlistDetails.owner?.display_name || 'Unknown'}
-                    </Badge>
-                    {playlistDetails.public !== undefined && (
-                      <Badge 
-                        bg={playlistDetails.public ? "#1DB954" : "#666"} 
-                        color="black" 
-                        fontSize="sm" 
-                        px={3} 
-                        py={1} 
-                        borderRadius="full"
-                      >
-                        {playlistDetails.public ? 'Public' : 'Private'}
-                      </Badge>
-                    )}
-                  </HStack>
-                </VStack>
-              </Flex>
-            </CardBody>
-          </Card>
-
-          {/* Aura Card */}
-          <Card
-            bg="#121212"
-            borderRadius="xl"
-            border="1px solid #282828"
-            transition="all 0.3s"
-            _hover={{ transform: 'translateY(-4px)', boxShadow: '0 20px 40px rgba(29,185,84,0.15)' }}
-          >
-            <CardBody p={{ base: 6, md: 8 }}>
-              <VStack align="start" spacing={4}>
-                <Text fontSize="md" color="#B3B3B3" fontWeight="medium">
-                  Your Playlist's Vibe Is...
-                </Text>
-                <Heading
-                  size={{ base: '2xl', md: '3xl' }}
-                  fontWeight="900"
-                  letterSpacing="-1px"
-                  color="#FFFFFF"
-                >
-                  {aura.name}
-                </Heading>
-                <Text fontSize="lg" color="#B3B3B3" lineHeight="1.8">
-                  {aura.description}
-                </Text>
-                <HStack spacing={4} mt={2}>
-                  <Button
-                    size="md"
-                    bg="#1DB954"
-                    color="black"
-                    borderRadius="full"
-                    fontWeight="bold"
-                    px={6}
-                    _hover={{ bg: '#1ed760', transform: 'scale(1.05)' }}
-                    transition="all 0.3s"
-                  >
-                    Share Your Aura
-                  </Button>
-                  <Box
-                    width="40px"
-                    height="40px"
-                    borderRadius="full"
-                    bg={aura.color || '#1DB954'}
-                    boxShadow={`0 0 15px ${aura.color || '#1DB954'}80`}
-                  />
-                </HStack>
-              </VStack>
-            </CardBody>
-          </Card>
-        </VStack>
-
-        {/* Right Column: Audio Features */}
-        <VStack flex={1} spacing={{ base: 6, md: 8 }} align="stretch">
-          <Card
-            bg="#121212"
-            borderRadius="xl"
-            border="1px solid #282828"
-            transition="all 0.3s"
-            _hover={{ transform: 'translateY(-4px)', boxShadow: '0 20px 40px rgba(29,185,84,0.15)' }}
-          >
-            <CardBody p={{ base: 6, md: 8 }}>
-              <HStack spacing={4} mb={6}>
-                <Icon as={FaMusic} color="#1DB954" boxSize={6} />
-                <Heading
-                  size={{ base: 'lg', md: 'xl' }}
-                  fontWeight="900"
-                  color="#FFFFFF"
-                  letterSpacing="-0.5px"
-                >
-                  Audio Features
-                </Heading>
-              </HStack>
-
-              <VStack spacing={{ base: 4, md: 6 }} align="stretch">
-                {avg_features && Object.keys(avg_features).length > 0 ? (
-                  <>
-                    <FeatureProgress label="Danceability" value={avg_features.danceability} />
-                    <FeatureProgress label="Energy" value={avg_features.energy} />
-                    <FeatureProgress label="Positivity" value={avg_features.valence} />
-                    <FeatureProgress label="Acousticness" value={avg_features.acousticness} />
-                    {avg_features.instrumentalness !== undefined && (
-                      <FeatureProgress label="Instrumentalness" value={avg_features.instrumentalness} />
-                    )}
-                    {avg_features.tempo !== undefined && (
-                      <Box>
-                        <HStack justify="space-between" mb={2}>
-                          <Text
-                            textTransform="capitalize"
-                            fontWeight="500"
-                            color="#FFFFFF"
-                            fontSize={{ base: 'sm', md: 'md' }}
-                          >
-                            Tempo
-                          </Text>
-                          <Badge
-                            bg="#1DB954"
-                            color="black"
-                            fontSize={{ base: 'xs', md: 'sm' }}
-                            px={3}
-                            py={1}
-                            borderRadius="full"
-                            fontWeight="bold"
-                          >
-                            {avg_features.tempo.toFixed(0)} BPM
-                          </Badge>
-                        </HStack>
-                        <Progress
-                          value={Math.min(avg_features.tempo, 200) / 2} // Normalize for display
-                          colorScheme="green"
-                          size="md"
-                          borderRadius="full"
-                          bg="#282828"
-                          sx={{
-                            '& > div': {
-                              bg: '#1DB954',
-                              transition: 'width 1s ease',
-                              boxShadow: '0 0 15px rgba(29,185,84,0.4)',
-                            },
-                          }}
-                        />
-                      </Box>
-                    )}
-                  </>
-                ) : (
-                  <Text fontSize="lg" color="#B3B3B3" fontWeight="medium">
-                    Not enough data to display audio features.
-                  </Text>
-                )}
-              </VStack>
-            </CardBody>
-          </Card>
-          
-          {/* Additional Info Card */}
-          <Card
-            bg="#121212"
-            borderRadius="xl"
-            border="1px solid #282828"
-            transition="all 0.3s"
-            _hover={{ transform: 'translateY(-4px)', boxShadow: '0 20px 40px rgba(29,185,84,0.15)' }}
-          >
-            <CardBody p={{ base: 6, md: 8 }}>
-              <VStack align="start" spacing={4}>
-                <Heading
-                  size={{ base: 'md', md: 'lg' }}
-                  fontWeight="700"
-                  color="#FFFFFF"
-                  letterSpacing="-0.5px"
-                >
-                  About This Analysis
-                </Heading>
-                <Text fontSize="sm" color="#B3B3B3" lineHeight="1.6">
-                  This analysis is based on the average audio features of all tracks in your playlist. 
-                  Spotify provides these features to help understand the musical characteristics of your collection.
-                </Text>
-                <Button
-                  as="a"
-                  href={`https://open.spotify.com/playlist/${id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  size="sm"
-                  variant="outline"
-                  color="#1DB954"
-                  borderColor="#1DB954"
-                  borderRadius="full"
-                  _hover={{ bg: '#1DB954', color: 'black' }}
-                  width="100%"
-                >
-                  Open in Spotify
-                </Button>
-              </VStack>
-            </CardBody>
-          </Card>
-        </VStack>
+      {/* Navigation */}
+      <Flex justify="space-between" align="center" mb={{ base: 8, md: 12 }}>
+        <Button
+          as={RouterLink}
+          to="/analyze/playlists"
+          leftIcon={<Icon as={FaArrowLeft} />}
+          variant="ghost"
+          color="#B3B3B3"
+          _hover={{ color: '#1DB954', bg: 'rgba(29, 185, 84, 0.1)' }}
+          size="lg"
+        >
+          Back to Playlists
+        </Button>
+        
+        <Button
+          leftIcon={<Icon as={FaShareAlt} />}
+          bg="rgba(29, 185, 84, 0.1)"
+          color="#1DB954"
+          border="1px solid rgba(29, 185, 84, 0.3)"
+          _hover={{ bg: '#1DB954', color: 'black', transform: 'scale(1.05)' }}
+          size="lg"
+          onClick={() => setIsShareModalOpen(true)}
+        >
+          Share Aura
+        </Button>
       </Flex>
+
+      {/* Main Content */}
+      <VStack spacing={{ base: 10, md: 12 }} maxW="1200px" mx="auto">
+        <VStack spacing={6} textAlign="center">
+          <Box
+            w="60px"
+            h="60px"
+            animation={`${float} 4s ease-in-out infinite`}
+          >
+            <Image
+              src={logo}
+              alt="Aurafy Logo"
+              w="100%"
+              h="100%"
+              objectFit="contain"
+              filter="drop-shadow(0 0 20px rgba(29,185,84,0.3))"
+            />
+          </Box>
+          
+          {/* Playlist Header with Image */}
+          <Flex
+            direction={{ base: 'column', md: 'row' }}
+            align="center"
+            justify="center"
+            gap={8}
+            w="full"
+          >
+            <AspectRatio ratio={1} w={{ base: '200px', md: '250px' }} borderRadius="2xl" overflow="hidden">
+              {playlistImage ? (
+                <Image
+                  src={playlistImage}
+                  alt={playlistDetails.name}
+                  objectFit="cover"
+                  transition="transform 0.3s"
+                  _hover={{ transform: 'scale(1.05)' }}
+                />
+              ) : (
+                <Box
+                  bg="linear-gradient(135deg, #282828, #1a1a1a)"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                >
+                  <Icon as={FaMusic} color="#1DB954" boxSize={16} />
+                </Box>
+              )}
+            </AspectRatio>
+            
+            <VStack align={{ base: 'center', md: 'start' }} spacing={4} maxW="600px">
+              <Heading
+                size={{ base: '2xl', md: '3xl' }}
+                fontWeight="900"
+                letterSpacing="-1px"
+                color="white"
+                textAlign={{ base: 'center', md: 'left' }}
+                lineHeight="1.1"
+              >
+                {playlistDetails.name}
+              </Heading>
+              
+              <Text color="#B3B3B3" fontSize="lg" textAlign={{ base: 'center', md: 'left' }}>
+                {playlistDetails.description || 'No description available'}
+              </Text>
+              
+              <HStack spacing={3} flexWrap="wrap" justify={{ base: 'center', md: 'flex-start' }}>
+                <Badge
+                  bg="rgba(29, 185, 84, 0.1)"
+                  color="#1DB954"
+                  fontSize="md"
+                  px={6}
+                  py={2}
+                  borderRadius="full"
+                  border="1px solid rgba(29, 185, 84, 0.3)"
+                  fontWeight="bold"
+                >
+                  <Icon as={FaMusic} mr={2} /> {playlistDetails.tracks?.total || 0} tracks
+                </Badge>
+                
+                <Badge
+                  bg="rgba(255, 255, 255, 0.1)"
+                  color="gray.300"
+                  fontSize="md"
+                  px={6}
+                  py={2}
+                  borderRadius="full"
+                  border="1px solid rgba(255, 255, 255, 0.1)"
+                >
+                  By {playlistDetails.owner?.display_name || 'Unknown'}
+                </Badge>
+                
+                {playlistDetails.public !== undefined && (
+                  <Badge
+                    bg={playlistDetails.public ? "rgba(29, 185, 84, 0.1)" : "rgba(102, 102, 102, 0.1)"}
+                    color={playlistDetails.public ? "#1DB954" : "#666"}
+                    fontSize="md"
+                    px={6}
+                    py={2}
+                    borderRadius="full"
+                    border={`1px solid ${playlistDetails.public ? 'rgba(29, 185, 84, 0.3)' : 'rgba(102, 102, 102, 0.3)'}`}
+                  >
+                    {playlistDetails.public ? 'Public' : 'Private'}
+                  </Badge>
+                )}
+              </HStack>
+            </VStack>
+          </Flex>
+        </VStack>
+
+        <Grid templateColumns={{ base: '1fr', lg: '1fr 1fr' }} gap={{ base: 8, md: 12 }} w="full" alignItems="stretch">
+          {/* Left Column: Aura Analysis */}
+          <GridItem display="flex">
+            <Card
+              bg="rgba(18, 18, 18, 0.9)"
+              borderRadius="2xl"
+              border="1px solid rgba(255, 255, 255, 0.1)"
+              backdropFilter="blur(20px)"
+              boxShadow="0 20px 40px -12px rgba(0, 0, 0, 0.8)"
+              transition="all 0.3s"
+              _hover={{ transform: 'translateY(-8px)', boxShadow: '0 30px 60px rgba(29, 185, 84, 0.15)' }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+            >
+              <CardBody p={{ base: 6, md: 8 }} display="flex" flexDirection="column" flex="1">
+                <VStack spacing={6} align="start" flex="1">
+                  <VStack spacing={4} align="start" w="full">
+                    <HStack spacing={3}>
+                      <Icon as={FaHeadphones} color="#1DB954" boxSize={6} />
+                      <Text
+                        fontSize="sm"
+                        color="gray.400"
+                        fontWeight="600"
+                        letterSpacing="1px"
+                        textTransform="uppercase"
+                      >
+                        Playlist Music Aura
+                      </Text>
+                    </HStack>
+                    
+                    <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                    
+                    <Heading
+                      size={{ base: 'xl', md: '2xl' }}
+                      fontWeight="900"
+                      color="white"
+                      lineHeight="1.2"
+                      bgGradient="linear(to-r, white, #1db954)"
+                      bgClip="text"
+                    >
+                      {auraName}
+                    </Heading>
+                    
+                    <Text
+                      fontSize="lg"
+                      color="gray.300"
+                      lineHeight="1.8"
+                      flex="1"
+                    >
+                      {auraDescription}
+                    </Text>
+                    
+                    <HStack spacing={3} mt={4}>
+                      <Box
+                        width="60px"
+                        height="60px"
+                        borderRadius="xl"
+                        bg={auraColor}
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="center"
+                        boxShadow={`0 10px 30px ${auraColor}80`}
+                      >
+                        <Icon as={FaStar} color="white" boxSize={8} />
+                      </Box>
+                      
+                      <VStack align="start" spacing={1}>
+                        <Text color="#1DB954" fontSize="sm" fontWeight="600">
+                          Dominant Features
+                        </Text>
+                        <HStack spacing={2}>
+                          {avg_features.danceability > 0.7 && (
+                            <Badge bg="rgba(29,185,84,0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Danceable</Badge>
+                          )}
+                          {avg_features.energy > 0.7 && (
+                            <Badge bg="rgba(29,185,84,0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Energetic</Badge>
+                          )}
+                          {avg_features.valence > 0.7 && (
+                            <Badge bg="rgba(29,185,84,0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Positive</Badge>
+                          )}
+                          {avg_features.acousticness > 0.7 && (
+                            <Badge bg="rgba(29,185,84,0.1)" color="#1DB954" fontSize="xs" px={2} py={1} borderRadius="full">Acoustic</Badge>
+                          )}
+                        </HStack>
+                      </VStack>
+                    </HStack>
+                  </VStack>
+                </VStack>
+              </CardBody>
+            </Card>
+          </GridItem>
+
+          {/* Right Column: Audio Features */}
+          <GridItem display="flex">
+            <Card
+              bg="rgba(18, 18, 18, 0.9)"
+              borderRadius="2xl"
+              border="1px solid rgba(255, 255, 255, 0.1)"
+              backdropFilter="blur(20px)"
+              boxShadow="0 20px 40px -12px rgba(0, 0, 0, 0.8)"
+              transition="all 0.3s"
+              _hover={{ transform: 'translateY(-8px)', boxShadow: '0 30px 60px rgba(29, 185, 84, 0.15)' }}
+              flex="1"
+              display="flex"
+              flexDirection="column"
+            >
+              <CardBody p={{ base: 6, md: 8 }} display="flex" flexDirection="column" flex="1">
+                <VStack spacing={6} align="start" flex="1">
+                  <VStack spacing={4} align="start" w="full">
+                    <HStack spacing={3}>
+                      <Icon as={FaBolt} color="#1DB954" boxSize={6} />
+                      <Text
+                        fontSize="sm"
+                        color="gray.400"
+                        fontWeight="600"
+                        letterSpacing="1px"
+                        textTransform="uppercase"
+                      >
+                        Audio Features Analysis
+                      </Text>
+                    </HStack>
+                    
+                    <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+                    
+                    <Text color="gray.300" fontSize="md">
+                      Average characteristics of your playlist tracks
+                    </Text>
+                  </VStack>
+
+                  {Object.keys(avg_features).length > 0 ? (
+                    <VStack spacing={4} w="full" flex="1">
+                      {avg_features.danceability !== undefined && (
+                        <FeatureProgress
+                          label="Danceability"
+                          value={avg_features.danceability}
+                          icon={FaFire}
+                        />
+                      )}
+                      {avg_features.energy !== undefined && (
+                        <FeatureProgress
+                          label="Energy"
+                          value={avg_features.energy}
+                          icon={FaBolt}
+                        />
+                      )}
+                      {avg_features.valence !== undefined && (
+                        <FeatureProgress
+                          label="Positivity"
+                          value={avg_features.valence}
+                          icon={FaHeart}
+                        />
+                      )}
+                      {avg_features.acousticness !== undefined && (
+                        <FeatureProgress
+                          label="Acousticness"
+                          value={avg_features.acousticness}
+                          icon={FaMountain}
+                        />
+                      )}
+                      {avg_features.instrumentalness !== undefined && (
+                        <FeatureProgress
+                          label="Instrumentalness"
+                          value={avg_features.instrumentalness}
+                          icon={FaVolumeUp}
+                        />
+                      )}
+                      {avg_features.tempo !== undefined && (
+                        <Box
+                          bg="rgba(18, 18, 18, 0.7)"
+                          borderRadius="xl"
+                          p={5}
+                          border="1px solid"
+                          borderColor="rgba(255, 255, 255, 0.1)"
+                          backdropFilter="blur(10px)"
+                          transition="all 0.3s"
+                          _hover={{
+                            transform: 'translateY(-4px)',
+                            borderColor: '#1DB954',
+                            boxShadow: '0 10px 30px rgba(29, 185, 84, 0.2)',
+                          }}
+                          w="full"
+                        >
+                          <HStack spacing={4} mb={4}>
+                            <Box
+                              p={2}
+                              bg="rgba(29, 185, 84, 0.1)"
+                              borderRadius="lg"
+                              border="1px solid rgba(29, 185, 84, 0.3)"
+                            >
+                              <Icon as={FaTachometerAlt} color="#1DB954" boxSize={5} />
+                            </Box>
+                            <VStack align="start" spacing={0} flex={1}>
+                              <Text
+                                textTransform="uppercase"
+                                fontWeight="600"
+                                color="#FFFFFF"
+                                fontSize="sm"
+                                letterSpacing="0.5px"
+                              >
+                                Tempo
+                              </Text>
+                              <Badge
+                                bg="#1DB954"
+                                color="black"
+                                fontSize="xs"
+                                px={3}
+                                py={1}
+                                borderRadius="full"
+                                fontWeight="bold"
+                              >
+                                {avg_features.tempo.toFixed(0)} BPM
+                              </Badge>
+                            </VStack>
+                          </HStack>
+                          <Progress
+                            value={Math.min(avg_features.tempo, 200) / 2}
+                            colorScheme="green"
+                            size="sm"
+                            borderRadius="full"
+                            bg="rgba(255, 255, 255, 0.1)"
+                            sx={{
+                              '& > div': {
+                                bg: 'linear-gradient(90deg, #1DB954, #1ed760)',
+                                transition: 'width 1s ease',
+                                boxShadow: '0 0 10px rgba(29,185,84,0.4)',
+                              },
+                            }}
+                          />
+                        </Box>
+                      )}
+                    </VStack>
+                  ) : (
+                    <Center w="full" py={8} flex="1">
+                      <VStack spacing={4}>
+                        <Icon as={FaMusic} color="gray.500" boxSize={12} />
+                        <Text color="gray.400" fontSize="lg" textAlign="center">
+                          No audio features available for this playlist
+                        </Text>
+                      </VStack>
+                    </Center>
+                  )}
+                  
+                  <Box w="full" pt={4}>
+                    <Button
+                      as="a"
+                      href={`https://open.spotify.com/playlist/${id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      w="full"
+                      variant="outline"
+                      color="#1DB954"
+                      borderColor="#1DB954"
+                      borderRadius="xl"
+                      _hover={{ bg: '#1DB954', color: 'black' }}
+                      size="lg"
+                      leftIcon={<Icon as={FaSpotify} />}
+                    >
+                      Open in Spotify
+                    </Button>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+          </GridItem>
+        </Grid>
+      </VStack>
+
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        auraData={{ name: auraName, description: auraDescription, color: auraColor }}
+        avgFeatures={avg_features || {}}
+        playlistDetails={playlistDetails}
+        playlistImage={playlistImage}
+      />
     </Box>
   );
 };
