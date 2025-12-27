@@ -3,7 +3,8 @@ import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   Box,
   Heading,
-  SimpleGrid,
+  Grid,
+  GridItem,
   Card,
   CardBody,
   Image,
@@ -16,15 +17,28 @@ import {
   IconButton,
   HStack,
   Badge,
+  Divider,
+  keyframes,
+  Flex,
   useBreakpointValue,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
 } from '@chakra-ui/react';
-import { FaArrowLeft, FaPlay, FaMusic, FaExclamationTriangle } from 'react-icons/fa';
+import {
+  FaArrowLeft,
+  FaPlay,
+  FaMusic,
+  FaFire,
+  FaBolt,
+  FaHeadphones,
+  FaList,
+} from 'react-icons/fa';
 import { getPlaylists } from '../api';
 import { useAuth } from '../App';
+import logo from './aurafy.png';
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+`;
 
 const PlaylistCard = ({ playlist }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
@@ -32,17 +46,19 @@ const PlaylistCard = ({ playlist }) => {
   return (
     <RouterLink to={`/analyze/playlist/${playlist.id}`} style={{ textDecoration: 'none' }}>
       <Card
-        bg="#121212"
-        borderRadius="xl"
+        bg="rgba(18, 18, 18, 0.9)"
+        borderRadius="2xl"
         overflow="hidden"
-        border="1px solid #282828"
+        border="1px solid rgba(255, 255, 255, 0.1)"
+        backdropFilter="blur(20px)"
         transition="all 0.3s"
         _hover={{ 
-          transform: 'translateY(-4px)', 
-          boxShadow: '0 20px 40px rgba(29,185,84,0.15)',
-          bg: '#181818'
+          transform: 'translateY(-8px)', 
+          boxShadow: '0 30px 60px rgba(29, 185, 84, 0.15)',
+          borderColor: '#1DB954',
         }}
         role="group"
+        height="100%"
       >
         <Box position="relative" height="200px" overflow="hidden">
           {playlist.images && playlist.images.length > 0 ? (
@@ -52,19 +68,19 @@ const PlaylistCard = ({ playlist }) => {
               width="100%"
               height="100%"
               objectFit="cover"
-              transition="transform 0.3s"
-              _groupHover={{ transform: 'scale(1.05)' }}
+              transition="transform 0.5s"
+              _groupHover={{ transform: 'scale(1.1)' }}
             />
           ) : (
             <Box
               width="100%"
               height="100%"
-              bg="#282828"
+              bg="rgba(40, 40, 40, 0.5)"
               display="flex"
               alignItems="center"
               justifyContent="center"
             >
-              <Icon as={FaMusic} color="#1DB954" boxSize={12} />
+              <Icon as={FaMusic} color="#1DB954" boxSize={16} opacity={0.5} />
             </Box>
           )}
           <Box
@@ -73,75 +89,100 @@ const PlaylistCard = ({ playlist }) => {
             left="0"
             right="0"
             bottom="0"
-            bg="linear-gradient(to top, rgba(0,0,0,0.8), transparent 60%)"
+            bg="linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.8) 100%)"
+            opacity={0.7}
+            transition="opacity 0.3s"
+            _groupHover={{ opacity: 0.9 }}
+          />
+          <Box
+            position="absolute"
+            bottom="4"
+            left="4"
+            right="4"
+          >
+            <Badge
+              bg="rgba(29, 185, 84, 0.9)"
+              color="black"
+              fontSize="xs"
+              px={3}
+              py={1}
+              borderRadius="full"
+              fontWeight="bold"
+              backdropFilter="blur(10px)"
+            >
+              {playlist.tracks?.total || 0} tracks
+            </Badge>
+          </Box>
+          <Box
+            position="absolute"
+            top="50%"
+            left="50%"
+            transform="translate(-50%, -50%)"
             opacity={0}
             _groupHover={{ opacity: 1 }}
-            transition="opacity 0.3s"
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
+            transition="all 0.3s"
           >
             <IconButton
               aria-label={`Analyze ${playlist.name}`}
               icon={<FaPlay />}
               size="lg"
-              colorScheme="green"
-              bg="#1DB954"
+              bg="rgba(29, 185, 84, 0.9)"
+              color="black"
               borderRadius="full"
-              _hover={{ bg: '#1ed760', transform: 'scale(1.1)' }}
+              _hover={{ 
+                bg: '#1DB954',
+                transform: 'scale(1.1)',
+                boxShadow: '0 0 30px rgba(29, 185, 84, 0.5)'
+              }}
               transition="all 0.2s"
+              backdropFilter="blur(10px)"
             />
           </Box>
         </Box>
-        <CardBody p={4}>
-          <VStack align="start" spacing={2}>
+        <CardBody p={5}>
+          <VStack align="start" spacing={3}>
             <Text
-              fontWeight="bold"
+              fontWeight="900"
               color="#FFFFFF"
-              fontSize="md"
+              fontSize="lg"
               noOfLines={1}
               width="100%"
+              letterSpacing="-0.5px"
             >
               {playlist.name || 'Unnamed Playlist'}
             </Text>
             <Text
               fontSize="sm"
-              color="#B3B3B3"
+              color="gray.300"
               noOfLines={2}
               width="100%"
+              lineHeight="1.6"
             >
-              {playlist.description || 'No description'}
+              {playlist.description || 'No description available'}
             </Text>
-            <HStack spacing={2} mt={1} flexWrap="wrap">
+            <Divider borderColor="rgba(255, 255, 255, 0.1)" />
+            <HStack spacing={2} flexWrap="wrap">
               <Badge
-                bg="#1DB954"
-                color="black"
+                bg="rgba(255, 255, 255, 0.1)"
+                color="gray.300"
                 fontSize="xs"
                 px={3}
                 py={1}
                 borderRadius="full"
-                fontWeight="bold"
-              >
-                {playlist.tracks?.total || 0} tracks
-              </Badge>
-              <Badge
-                bg="#282828"
-                color="#B3B3B3"
-                fontSize="xs"
-                px={3}
-                py={1}
-                borderRadius="full"
+                fontWeight="medium"
+                border="1px solid rgba(255, 255, 255, 0.1)"
               >
                 By {playlist.owner?.display_name || 'Unknown'}
               </Badge>
               {playlist.public !== undefined && (
                 <Badge
-                  bg={playlist.public ? "#1DB954" : "#666"}
-                  color="black"
+                  bg={playlist.public ? "rgba(29, 185, 84, 0.1)" : "rgba(102, 102, 102, 0.1)"}
+                  color={playlist.public ? "#1DB954" : "#666"}
                   fontSize="xs"
                   px={3}
                   py={1}
                   borderRadius="full"
+                  border={`1px solid ${playlist.public ? 'rgba(29, 185, 84, 0.3)' : 'rgba(102, 102, 102, 0.3)'}`}
                 >
                   {playlist.public ? 'Public' : 'Private'}
                 </Badge>
@@ -155,7 +196,7 @@ const PlaylistCard = ({ playlist }) => {
 };
 
 const PlaylistSelection = () => {
-  const { token, logout } = useAuth();
+  const { token } = useAuth();
   const [playlists, setPlaylists] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -163,104 +204,52 @@ const PlaylistSelection = () => {
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   useEffect(() => {
-    console.log('🔍 PlaylistSelection mounted');
-    console.log('Token from useAuth:', token ? `${token.substring(0, 20)}...` : 'No token');
-  }, [token]);
-
-  useEffect(() => {
     const fetchPlaylists = async () => {
       if (!token) {
-        console.error('❌ No token available');
-        setError("No authentication token found. Please login again.");
+        setError("Please log in to view your playlists.");
         setLoading(false);
         return;
       }
 
-      console.log('🚀 Fetching playlists with token:', token.substring(0, 30) + '...');
-
       try {
         setLoading(true);
         setError(null);
-
         const res = await getPlaylists(token);
-        console.log('✅ Playlists fetched successfully:', res.data.items?.length || 0, 'playlists');
         
         if (res.data.items && res.data.items.length > 0) {
           setPlaylists(res.data.items);
         } else {
           setPlaylists([]);
-          setError({
-            title: "No Playlists Found",
-            message: "You don't have any playlists to analyze.",
-            type: "info"
-          });
         }
 
       } catch (err) {
-        console.error('❌ Failed to fetch playlists:', err);
+        console.error('Failed to fetch playlists:', err);
         
-        if (err.response) {
-          console.error('Response status:', err.response.status);
-          console.error('Response data:', err.response.data);
-          
-          if (err.response.status === 403) {
-            // Token expired - try to refresh
-            const refreshToken = localStorage.getItem('refreshToken');
-            if (refreshToken) {
-              try {
-                console.log('🔄 Attempting token refresh...');
-                const refreshRes = await fetch(
-                  `http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`
-                );
+        if (err.response?.status === 403) {
+          const refreshToken = localStorage.getItem('refreshToken');
+          if (refreshToken) {
+            try {
+              const refreshRes = await fetch(
+                `http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`
+              );
+              
+              if (refreshRes.ok) {
+                const data = await refreshRes.json();
+                const newToken = data.access_token;
+                localStorage.setItem('token', newToken);
                 
-                if (refreshRes.ok) {
-                  const data = await refreshRes.json();
-                  const newToken = data.access_token;
-                  localStorage.setItem('token', newToken);
-                  
-                  // Retry fetching playlists
-                  console.log('🔄 Retrying with new token...');
-                  const retryRes = await getPlaylists(newToken);
-                  setPlaylists(retryRes.data.items || []);
-                  return;
-                }
-              } catch (refreshErr) {
-                console.error('Token refresh failed:', refreshErr);
+                const retryRes = await getPlaylists(newToken);
+                setPlaylists(retryRes.data.items || []);
+                return;
               }
+            } catch (refreshErr) {
+              console.error('Token refresh failed:', refreshErr);
             }
-            
-            setError({
-              title: "Session Expired",
-              message: "Your session has expired. Please log in again.",
-              type: "error",
-              retry: true
-            });
-          } else if (err.response.status === 401) {
-            setError({
-              title: "Unauthorized",
-              message: "You don't have permission to access playlists.",
-              type: "error"
-            });
-          } else {
-            setError({
-              title: `Error ${err.response.status}`,
-              message: "Failed to load playlists. Please try again.",
-              type: "error",
-              details: err.response.data
-            });
           }
-        } else if (err.request) {
-          setError({
-            title: "Connection Error",
-            message: "No response from server. Is the backend running?",
-            type: "error"
-          });
+          
+          setError("Session expired. Please log in again.");
         } else {
-          setError({
-            title: "Request Error",
-            message: err.message || "An unexpected error occurred.",
-            type: "error"
-          });
+          setError("Failed to load playlists. Please try again.");
         }
       } finally {
         setLoading(false);
@@ -270,39 +259,83 @@ const PlaylistSelection = () => {
     fetchPlaylists();
   }, [token, navigate]);
 
-  const handleRetry = () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (refreshToken) {
-      // Try to refresh token
-      fetch(`http://localhost:8000/api/refresh_token?refresh_token=${refreshToken}`)
-        .then(res => {
-          if (res.ok) return res.json();
-          throw new Error('Token refresh failed');
-        })
-        .then(data => {
-          localStorage.setItem('token', data.access_token);
-          window.location.reload();
-        })
-        .catch(() => {
-          // If refresh fails, go to login
-          logout();
-          navigate('/login');
-        });
-    } else {
-      // No refresh token, go to login
-      logout();
-      navigate('/login');
-    }
-  };
-
   if (loading) {
     return (
       <Center minH="100vh" bg="#000">
-        <VStack spacing={6}>
-          <Spinner size="xl" color="#1DB954" thickness="4px" />
-          <Text color="#B3B3B3" fontSize={{ base: 'lg', md: 'xl' }} fontWeight="medium">
-            Loading your playlists...
+        <VStack spacing={8}>
+          <Box
+            w="80px"
+            h="80px"
+            animation={`${float} 3s ease-in-out infinite`}
+          >
+            <Image
+              src={logo}
+              alt="Aurafy Logo"
+              w="100%"
+              h="100%"
+              objectFit="contain"
+              filter="drop-shadow(0 0 20px rgba(29,185,84,0.3))"
+            />
+          </Box>
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#1DB954" thickness="4px" />
+            <Heading
+              size="lg"
+              fontWeight="900"
+              letterSpacing="-1px"
+              bgGradient="linear(to-r, white, #1db954)"
+              bgClip="text"
+            >
+              Loading Your Playlists
+            </Heading>
+            <Text color="gray.400" fontSize="md">
+              Fetching your Spotify playlists...
+            </Text>
+          </VStack>
+        </VStack>
+      </Center>
+    );
+  }
+
+  if (error) {
+    return (
+      <Center minH="100vh" bg="#000" p={6}>
+        <VStack spacing={8} maxW="500px" textAlign="center">
+          <Icon as={FaHeadphones} color="#1DB954" boxSize={12} />
+          <Heading size="xl" fontWeight="900" color="white">
+            Unable to Load Playlists
+          </Heading>
+          <Text color="gray.300" fontSize="lg">
+            {error}
           </Text>
+          <VStack spacing={4}>
+            <Button
+              as={RouterLink}
+              to="/"
+              leftIcon={<Icon as={FaArrowLeft} />}
+              size="lg"
+              bg="#1DB954"
+              color="black"
+              borderRadius="full"
+              fontWeight="bold"
+              px={8}
+              _hover={{ bg: '#1ed760', transform: 'scale(1.05)' }}
+              transition="all 0.3s"
+            >
+              Back to Dashboard
+            </Button>
+            <Button
+              onClick={() => window.location.reload()}
+              size="md"
+              variant="outline"
+              color="#1DB954"
+              borderColor="#1DB954"
+              borderRadius="full"
+              _hover={{ bg: '#1DB954', color: 'black' }}
+            >
+              Try Again
+            </Button>
+          </VStack>
         </VStack>
       </Center>
     );
@@ -316,206 +349,209 @@ const PlaylistSelection = () => {
       color="#FFFFFF"
       fontFamily="'Circular Std', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
     >
-      <Button
-        as={RouterLink}
-        to="/"
-        leftIcon={<Icon as={FaArrowLeft} />}
-        mb={{ base: 6, md: 8 }}
-        size="md"
-        bg="#1DB954"
-        color="black"
-        borderRadius="full"
-        fontWeight="bold"
-        px={6}
-        _hover={{
-          bg: '#1ed760',
-          transform: 'scale(1.05)',
-        }}
-        transition="all 0.3s"
-      >
-        Back to Dashboard
-      </Button>
-
-      <HStack spacing={4} mb={{ base: 6, md: 8 }} align="center">
-        <Icon as={FaMusic} color="#1DB954" boxSize={8} />
-        <Heading
-          size={{ base: 'xl', md: '2xl' }}
-          fontWeight="900"
-          letterSpacing="-0.5px"
-          color="#FFFFFF"
+      {/* Navigation */}
+      <Flex justify="space-between" align="center" mb={{ base: 8, md: 12 }}>
+        <Button
+          as={RouterLink}
+          to="/"
+          leftIcon={<Icon as={FaArrowLeft} />}
+          variant="ghost"
+          color="#B3B3B3"
+          _hover={{ color: '#1DB954', bg: 'rgba(29, 185, 84, 0.1)' }}
+          size="lg"
         >
-          Choose a Playlist to Analyze
-        </Heading>
-      </HStack>
+          Back to Dashboard
+        </Button>
+        
+        {playlists.length > 0 && (
+          <Badge
+            bg="rgba(29, 185, 84, 0.1)"
+            color="#1DB954"
+            fontSize="md"
+            px={6}
+            py={3}
+            borderRadius="full"
+            border="1px solid rgba(29, 185, 84, 0.3)"
+            fontWeight="bold"
+          >
+            {playlists.length} Playlist{playlists.length !== 1 ? 's' : ''}
+          </Badge>
+        )}
+      </Flex>
 
-      {error ? (
-        <Center minH="50vh">
-          <VStack spacing={6} maxW="600px" textAlign="center">
-            <Alert
-              status={error.type === 'error' ? 'error' : 'info'}
-              borderRadius="xl"
-              bg="#121212"
-              border="1px solid"
-              borderColor={error.type === 'error' ? '#E53E3E' : '#3182CE'}
-              flexDirection="column"
-              alignItems="center"
-              justifyContent="center"
-              p={8}
-            >
-              <AlertIcon
-                as={error.type === 'error' ? FaExclamationTriangle : FaMusic}
-                boxSize={10}
-                color={error.type === 'error' ? '#E53E3E' : '#3182CE'}
-                mb={4}
-              />
-              <AlertTitle fontSize="xl" mb={2}>
-                {error.title}
-              </AlertTitle>
-              <AlertDescription fontSize="md" color="#B3B3B3">
-                {error.message}
-              </AlertDescription>
-              
-              {error.details && (
-                <Box 
-                  mt={4} 
-                  p={4} 
-                  bg="#1a1a1a" 
-                  borderRadius="md" 
-                  width="100%"
-                  maxH="200px"
-                  overflowY="auto"
-                >
-                  <Text fontSize="sm" fontFamily="monospace" color="#B3B3B3">
-                    {JSON.stringify(error.details, null, 2)}
-                  </Text>
-                </Box>
-              )}
-              
-              <VStack spacing={4} mt={6}>
-                {error.retry ? (
-                  <>
-                    <Button
-                      onClick={handleRetry}
-                      size="lg"
-                      bg="#1DB954"
-                      color="black"
-                      borderRadius="full"
-                      fontWeight="bold"
-                      px={8}
-                      _hover={{ bg: '#1ed760' }}
-                    >
-                      Log In Again
-                    </Button>
-                    <Button
-                      onClick={() => navigate('/')}
-                      size="md"
-                      variant="outline"
-                      color="#1DB954"
-                      borderColor="#1DB954"
-                      borderRadius="full"
-                      _hover={{ bg: '#1DB954', color: 'black' }}
-                    >
-                      Back to Dashboard
-                    </Button>
-                  </>
-                ) : (
-                  <Button
-                    onClick={() => navigate('/')}
-                    size="lg"
-                    bg="#1DB954"
-                    color="black"
-                    borderRadius="full"
-                    fontWeight="bold"
-                    px={8}
-                    _hover={{ bg: '#1ed760' }}
-                  >
-                    Back to Dashboard
-                  </Button>
-                )}
-                
-                {error.type === 'info' && (
+      {/* Main Content */}
+      <VStack spacing={{ base: 10, md: 12 }} maxW="1200px" mx="auto">
+        <VStack spacing={4} textAlign="center">
+          <Box
+            w="60px"
+            h="60px"
+            animation={`${float} 4s ease-in-out infinite`}
+          >
+            <Image
+              src={logo}
+              alt="Aurafy Logo"
+              w="100%"
+              h="100%"
+              objectFit="contain"
+              filter="drop-shadow(0 0 20px rgba(29,185,84,0.3))"
+            />
+          </Box>
+          <Heading
+            size={{ base: '2xl', md: '3xl' }}
+            fontWeight="900"
+            letterSpacing="-1px"
+            bgGradient="linear(to-r, white, #1db954)"
+            bgClip="text"
+          >
+            Select a Playlist
+          </Heading>
+          <Text color="#B3B3B3" fontSize="lg">
+            Choose a playlist to analyze its unique music aura
+          </Text>
+        </VStack>
+
+        {playlists.length === 0 ? (
+          <Card
+            bg="rgba(18, 18, 18, 0.9)"
+            borderRadius="2xl"
+            border="1px solid rgba(255, 255, 255, 0.1)"
+            backdropFilter="blur(20px)"
+            boxShadow="0 20px 40px -12px rgba(0, 0, 0, 0.8)"
+            w="full"
+            maxW="600px"
+            mx="auto"
+          >
+            <CardBody p={{ base: 8, md: 12 }}>
+              <VStack spacing={6} textAlign="center">
+                <Icon as={FaMusic} color="#1DB954" boxSize={16} />
+                <Heading size="lg" color="white">
+                  No Playlists Found
+                </Heading>
+                <Text color="gray.300" fontSize="md">
+                  You don't have any playlists to analyze yet. Create some playlists on Spotify first!
+                </Text>
+                <VStack spacing={4} w="full" pt={4}>
                   <Button
                     as="a"
                     href="https://open.spotify.com/"
                     target="_blank"
                     rel="noopener noreferrer"
+                    w="full"
+                    size="lg"
+                    bg="#1DB954"
+                    color="black"
+                    borderRadius="xl"
+                    fontWeight="bold"
+                    _hover={{ bg: '#1ed760', transform: 'scale(1.02)' }}
+                    transition="all 0.3s"
+                  >
+                    Create Playlists on Spotify
+                  </Button>
+                  <Button
+                    as={RouterLink}
+                    to="/"
+                    w="full"
                     size="md"
                     variant="outline"
                     color="#1DB954"
                     borderColor="#1DB954"
-                    borderRadius="full"
+                    borderRadius="xl"
                     _hover={{ bg: '#1DB954', color: 'black' }}
                   >
-                    Create Playlists on Spotify
+                    Back to Dashboard
                   </Button>
-                )}
+                </VStack>
               </VStack>
-            </Alert>
-          </VStack>
-        </Center>
-      ) : playlists.length === 0 ? (
-        <Center minH="50vh">
-          <VStack spacing={6} textAlign="center">
-            <Icon as={FaMusic} color="#1DB954" boxSize={16} />
-            <Heading size="lg" color="#FFFFFF">
-              No Playlists Found
-            </Heading>
-            <Text color="#B3B3B3" fontSize="lg" maxW="500px">
-              You don't have any playlists to analyze. Create some playlists on Spotify first!
-            </Text>
-            <HStack spacing={4} mt={4}>
-              <Button
-                as="a"
-                href="https://open.spotify.com/"
-                target="_blank"
-                rel="noopener noreferrer"
-                size="lg"
-                bg="#1DB954"
-                color="black"
-                borderRadius="full"
-                fontWeight="bold"
-                px={8}
-                _hover={{ bg: '#1ed760' }}
-              >
-                Go to Spotify
-              </Button>
-              <Button
-                onClick={() => navigate('/')}
-                size="lg"
-                variant="outline"
-                color="#1DB954"
-                borderColor="#1DB954"
-                borderRadius="full"
-                _hover={{ bg: '#1DB954', color: 'black' }}
-              >
-                Back to Dashboard
-              </Button>
-            </HStack>
-          </VStack>
-        </Center>
-      ) : (
-        <>
-          <Text color="#B3B3B3" fontSize="lg" mb={6}>
-            Found {playlists.length} playlist{playlists.length !== 1 ? 's' : ''}
-          </Text>
-          
-          <SimpleGrid
-            columns={{ base: 1, sm: 2, md: 3, lg: 4, xl: 5 }}
-            spacing={{ base: 4, md: 6 }}
-          >
-            {playlists.map(playlist => (
-              <PlaylistCard key={playlist.id} playlist={playlist} />
-            ))}
-          </SimpleGrid>
-          
-          <Box mt={8} pt={6} borderTop="1px solid #282828">
-            <Text color="#B3B3B3" fontSize="sm" textAlign="center">
-              Note: Only playlists you own or have access to are shown here.
-              Private playlists are marked with a gray badge.
-            </Text>
-          </Box>
-        </>
-      )}
+            </CardBody>
+          </Card>
+        ) : (
+          <>
+            <Grid
+              templateColumns={{
+                base: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)',
+                xl: 'repeat(5, 1fr)',
+              }}
+              gap={{ base: 6, md: 8 }}
+              w="full"
+            >
+              {playlists.map(playlist => (
+                <GridItem key={playlist.id}>
+                  <PlaylistCard playlist={playlist} />
+                </GridItem>
+              ))}
+            </Grid>
+
+            <Card
+              bg="rgba(18, 18, 18, 0.9)"
+              borderRadius="2xl"
+              border="1px solid rgba(255, 255, 255, 0.1)"
+              backdropFilter="blur(20px)"
+              w="full"
+              maxW="800px"
+              mx="auto"
+            >
+              <CardBody p={{ base: 6, md: 8 }}>
+                <VStack spacing={4} align="center">
+                  <HStack spacing={3}>
+                    <Icon as={FaList} color="#1DB954" boxSize={6} />
+                    <Text
+                      fontSize="sm"
+                      color="gray.400"
+                      fontWeight="600"
+                      letterSpacing="1px"
+                      textTransform="uppercase"
+                    >
+                      About Playlist Analysis
+                    </Text>
+                  </HStack>
+                  <Text color="gray.300" fontSize="md" textAlign="center">
+                    Each playlist has a unique musical aura based on its tracks' audio features.
+                    Select any playlist above to discover its vibe, energy, and character!
+                  </Text>
+                  <HStack spacing={3} pt={2}>
+                    <Badge
+                      bg="rgba(29, 185, 84, 0.1)"
+                      color="#1DB954"
+                      fontSize="xs"
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      border="1px solid rgba(29, 185, 84, 0.3)"
+                    >
+                      Danceability
+                    </Badge>
+                    <Badge
+                      bg="rgba(29, 185, 84, 0.1)"
+                      color="#1DB954"
+                      fontSize="xs"
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      border="1px solid rgba(29, 185, 84, 0.3)"
+                    >
+                      Energy
+                    </Badge>
+                    <Badge
+                      bg="rgba(29, 185, 84, 0.1)"
+                      color="#1DB954"
+                      fontSize="xs"
+                      px={4}
+                      py={2}
+                      borderRadius="full"
+                      border="1px solid rgba(29, 185, 84, 0.3)"
+                    >
+                      Positivity
+                    </Badge>
+                  </HStack>
+                </VStack>
+              </CardBody>
+            </Card>
+          </>
+        )}
+      </VStack>
     </Box>
   );
 };
