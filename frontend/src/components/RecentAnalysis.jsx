@@ -581,6 +581,10 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   const downloadAsImage = async () => {
+    if (!analysis) return;
+
+    const { aura, avg_features: features } = analysis.analysis;
+
     setDownloading(true);
     let offscreenDiv = null;
     try {
@@ -602,21 +606,21 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
 
       const content = `
         <div style="margin-bottom: 48px;">
-          <img src="${track.track.album.images[0]?.url || logo}" style="width: 320px; height: 320px; border-radius: 24px; box-shadow: 0 20px 60px rgba(29,185,84,0.3);" alt="Track Cover" />
+          <img src="${track?.track?.album?.images?.[0]?.url || logo}" style="width: 320px; height: 320px; border-radius: 24px; box-shadow: 0 20px 60px rgba(29,185,84,0.3);" alt="Track Cover" />
         </div>
         <div style="font-size: 28px; color: #1DB954; font-weight: 700; letter-spacing: 4px; margin-bottom: 24px; text-transform: uppercase;">
           Track Music Aura
         </div>
         <div style="font-size: 90px; font-weight: 900; line-height: 1; margin-bottom: 32px; color: white;">
-          ${analysis.aura?.name || "Unknown Vibe"}
+          ${aura?.name || "Unknown Vibe"}
         </div>
         <div style="font-size: 32px; color: #b3b3b3; line-height: 1.4; margin-bottom: 64px; max-width: 900px;">
-          ${analysis.aura?.description || "No description available"}
+          ${aura?.description || "No description available"}
         </div>
         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 28px; margin-bottom: 80px; max-width: 900px;">
-          ${analysis.features.danceability !== undefined ? `<div style="background: rgba(29,185,84,0.18); border: 2px solid rgba(29,185,84,0.4); padding: 16px 36px; border-radius: 999px; font-size: 24px; font-weight: 600; color: #1DB954;">Danceability: ${(analysis.features.danceability * 100).toFixed(0)}%</div>` : ''}
-          ${analysis.features.energy !== undefined ? `<div style="background: rgba(29,185,84,0.18); border: 2px solid rgba(29,185,84,0.4); padding: 16px 36px; border-radius: 999px; font-size: 24px; font-weight: 600; color: #1DB954;">Energy: ${(analysis.features.energy * 100).toFixed(0)}%</div>` : ''}
-          ${analysis.features.valence !== undefined ? `<div style="background: rgba(29,185,84,0.18); border: 2px solid rgba(29,185,84,0.4); padding: 16px 36px; border-radius: 999px; font-size: 24px; font-weight: 600; color: #1DB954;">Positivity: ${(analysis.features.valence * 100).toFixed(0)}%</div>` : ''}
+          ${features.danceability !== undefined ? `<div style="background: rgba(29,185,84,0.18); border: 2px solid rgba(29,185,84,0.4); padding: 16px 36px; border-radius: 999px; font-size: 24px; font-weight: 600; color: #1DB954;">Danceability: ${(features.danceability * 100).toFixed(0)}%</div>` : ''}
+          ${features.energy !== undefined ? `<div style="background: rgba(29,185,84,0.18); border: 2px solid rgba(29,185,84,0.4); padding: 16px 36px; border-radius: 999px; font-size: 24px; font-weight: 600; color: #1DB954;">Energy: ${(features.energy * 100).toFixed(0)}%</div>` : ''}
+          ${features.valence !== undefined ? `<div style="background: rgba(29,185,84,0.18); border: 2px solid rgba(29,185,84,0.4); padding: 16px 36px; border-radius: 999px; font-size: 24px; font-weight: 600; color: #1DB954;">Positivity: ${(features.valence * 100).toFixed(0)}%</div>` : ''}
         </div>
         <div style="margin-top: auto; padding-top: 48px; border-top: 2px solid rgba(255,255,255,0.08);">
           <div style="font-size: 22px; color: #666; letter-spacing: 1px;">
@@ -666,9 +670,65 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
     }
   };
 
-  if (!analysis) return null;
+  const renderContent = () => {
+    if (!analysis) {
+      return (
+        <Center h="300px">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="#1DB954" />
+            <Text color="gray.400">Analyzing track...</Text>
+          </VStack>
+        </Center>
+      );
+    }
 
-  const { aura, avg_features: features } = analysis.analysis;
+    const { aura, avg_features: features } = analysis.analysis;
+
+    return (
+      <VStack spacing={{ base: 4, md: 6 }}>
+        <Image
+          src={track.track.album.images[0]?.url}
+          alt={track.track.name}
+          borderRadius="xl"
+          boxSize={{ base: "150px", md: "200px" }}
+          objectFit="cover"
+        />
+        <Heading size={{ base: "lg", md: "xl" }} color="white" textAlign="center">
+          {aura?.name || "Unknown Vibe"}
+        </Heading>
+        <Text color="gray.300" textAlign="center" fontSize={{ base: "sm", md: "md" }}>
+          {aura?.description || "No description available"}
+        </Text>
+        <VStack spacing={3} w="full">
+          {features.danceability !== undefined && (
+            <FeatureProgress label="Danceability" value={features.danceability} icon={FaFire} />
+          )}
+          {features.energy !== undefined && (
+            <FeatureProgress label="Energy" value={features.energy} icon={FaBolt} />
+          )}
+          {features.valence !== undefined && (
+            <FeatureProgress label="Positivity" value={features.valence} icon={FaHeart} />
+          )}
+          {features.acousticness !== undefined && (
+            <FeatureProgress label="Acousticness" value={features.acousticness} icon={FaMountain} />
+          )}
+          {features.instrumentalness !== undefined && (
+            <FeatureProgress label="Instrumentalness" value={features.instrumentalness} icon={FaVolumeUp} />
+          )}
+        </VStack>
+        <Button
+          colorScheme="green"
+          onClick={downloadAsImage}
+          isLoading={downloading}
+          w="full"
+          size={{ base: "md", md: "lg" }}
+          leftIcon={<FaDownload />}
+        >
+          Save Track Aura Image
+        </Button>
+      </VStack>
+    );
+  };
 
   return (
     <Modal 
@@ -691,7 +751,7 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
           fontSize={{ base: "lg", md: "xl" }}
           py={{ base: 4, md: 6 }}
         >
-          Track Aura: {track.track.name}
+          Track Aura: {track?.track?.name}
         </ModalHeader>
         <ModalCloseButton 
           color="white" 
@@ -701,48 +761,7 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
           right={{ base: 3, md: 4 }}
         />
         <ModalBody py={{ base: 4, md: 6 }} px={{ base: 4, md: 6 }}>
-          <VStack spacing={{ base: 4, md: 6 }}>
-            <Image
-              src={track.track.album.images[0]?.url}
-              alt={track.track.name}
-              borderRadius="xl"
-              boxSize={{ base: "150px", md: "200px" }}
-              objectFit="cover"
-            />
-            <Heading size={{ base: "lg", md: "xl" }} color="white" textAlign="center">
-              {aura?.name || "Unknown Vibe"}
-            </Heading>
-            <Text color="gray.300" textAlign="center" fontSize={{ base: "sm", md: "md" }}>
-              {aura?.description || "No description available"}
-            </Text>
-            <VStack spacing={3} w="full">
-              {features.danceability !== undefined && (
-                <FeatureProgress label="Danceability" value={features.danceability} icon={FaFire} />
-              )}
-              {features.energy !== undefined && (
-                <FeatureProgress label="Energy" value={features.energy} icon={FaBolt} />
-              )}
-              {features.valence !== undefined && (
-                <FeatureProgress label="Positivity" value={features.valence} icon={FaHeart} />
-              )}
-              {features.acousticness !== undefined && (
-                <FeatureProgress label="Acousticness" value={features.acousticness} icon={FaMountain} />
-              )}
-              {features.instrumentalness !== undefined && (
-                <FeatureProgress label="Instrumentalness" value={features.instrumentalness} icon={FaVolumeUp} />
-              )}
-            </VStack>
-            <Button
-              colorScheme="green"
-              onClick={downloadAsImage}
-              isLoading={downloading}
-              w="full"
-              size={{ base: "md", md: "lg" }}
-              leftIcon={<FaDownload />}
-            >
-              Save Track Aura Image
-            </Button>
-          </VStack>
+          {renderContent()}
         </ModalBody>
       </ModalContent>
     </Modal>
@@ -907,6 +926,7 @@ const RecentAnalysis = () => {
         align="center"
         cursor="pointer"
         onClick={() => handleTrackClick(item)}
+        data-testid={`track-item-${item.track.id}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         _hover={{ bg: 'rgba(29, 185, 84, 0.15)', transform: { base: 'none', md: 'translateX(4px)' } }}
