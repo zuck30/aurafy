@@ -295,8 +295,8 @@ def calculate_aura(features_list: List[Dict]):
     if not valid_features:
         return {
             "aura": {
-                "name": "The Mysterious Void",
-                "description": "We couldn't find any audio features. Is this playlist just a figment of your imagination?",
+                "name": "Silent Symphony",
+                "description": "We couldn't analyze the audio features of this playlist. The tracks might not be available for analysis.",
                 "color": "#9E9E9E"
             },
             "avg_features": {}
@@ -314,8 +314,8 @@ def calculate_aura(features_list: List[Dict]):
     if not avg_features:
         return {
             "aura": {
-                "name": "Unknown Territory",
-                "description": "We couldn't analyze the audio features of these tracks.",
+                "name": "Memory Lane",
+                "description": "Your recent listening history is full of tracks that we couldn't analyze fully.",
                 "color": "#9E9E9E"
             },
             "avg_features": {}
@@ -539,6 +539,17 @@ async def analyze_track(track_id: str, access_token: str):
     # Get audio features for the track
     try:
         response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features/{track_id}", headers=headers)
+        if response.status_code == 404:
+            logger.warning(f"Audio features not found for track {track_id}")
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": {
+                        "status": 404,
+                        "message": "Audio features for this track are not available on Spotify.",
+                    }
+                }
+            )
         if response.status_code != 200:
             logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
             raise HTTPException(status_code=response.status_code, detail=response.json())

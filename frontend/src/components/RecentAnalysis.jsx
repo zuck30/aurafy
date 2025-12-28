@@ -668,7 +668,7 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
 
   if (!analysis) return null;
 
-  const { aura, features } = analysis;
+  const { aura, avg_features: features } = analysis.analysis;
 
   return (
     <Modal 
@@ -803,9 +803,13 @@ const RecentAnalysis = () => {
       const res = await analyzeTrack(token, track.track.id);
       setTrackAnalysis(res.data);
     } catch (err) {
+      const description =
+        err.response?.data?.detail?.error?.message ||
+        err.response?.data?.detail?.message ||
+        'Please try again';
       toast({
         title: "Failed to analyze track",
-        description: "Please try again",
+        description,
         status: "error",
         duration: 3000,
         position: isMobile ? "bottom" : "top",
