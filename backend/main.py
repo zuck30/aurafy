@@ -537,26 +537,20 @@ async def analyze_track(track_id: str, access_token: str):
         )
    
     # Get audio features for the track
+    features = None
     try:
-        response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features/{track_id}", headers=headers)
-        if response.status_code == 404:
-            logger.warning(f"Audio features not found for track {track_id}")
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "error": {
-                        "status": 404,
-                        "message": "Audio features for this track are not available on Spotify.",
-                    }
-                }
+        response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features/{track_id}", headers=headers, timeout=10)
+        if response.status_code == 200 and response.text:
+            # If the request is successful and there's content, parse it
+            features = response.json()
+        elif response.status_code != 200:
+            # Log a warning for non-200 responses, but don't crash
+            logger.warning(
+                f"Spotify API returned status {response.status_code} for audio features of track {track_id}"
             )
-        if response.status_code != 200:
-            logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
-            raise HTTPException(status_code=response.status_code, detail=response.json())
-        features = response.json()
-    except Exception as e:
-        logger.error(f"Error getting audio features for track {track_id}: {str(e)}")
-        raise HTTPException(status_code=500, detail={"message": "Failed to get audio features", "details": str(e)})
+    except requests.exceptions.RequestException as e:
+        # If the request itself fails, log the error but don't crash
+        logger.error(f"Request failed for audio features of track {track_id}: {str(e)}")
    
     # Calculate aura based on single track
     analysis_result = calculate_aura([features])
