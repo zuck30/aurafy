@@ -137,7 +137,15 @@ If you encounter an `ERR_CONNECTION_REFUSED` error when trying to log in, it lik
 
 <h2>Recently played.</h2>
 
-![Screenshot](./screenshots/recently-played.png)
+![Screenshot](./screenshots/recently.png)
+
+<h2>Playllist Selection.</h2>
+
+![Screenshot](./screenshots/playlist-selection.png)
+
+<h2>Playlists.</h2>
+
+![Screenshot](./screenshots/playlist.png)
 
 <h2> TODO: </h2>
 <h3>Write better algorithm for the auras.</h3>
