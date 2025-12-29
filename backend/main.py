@@ -539,21 +539,11 @@ async def analyze_track(track_id: str, access_token: str):
             }
         )
    
-    # Get audio features for the track
-    features = None
-    try:
-        response = requests.get(f"{SPOTIFY_API_BASE_URL}/audio-features/{track_id}", headers=headers, timeout=10)
-        if response.status_code == 200 and response.text:
-            # If the request is successful and there's content, parse it
-            features = response.json()
-        elif response.status_code != 200:
-            # Log a warning for non-200 responses, but don't crash
-            logger.warning(
-                f"Spotify API returned status {response.status_code} for audio features of track {track_id}"
-            )
-    except requests.exceptions.RequestException as e:
-        # If the request itself fails, log the error but don't crash
-        logger.error(f"Request failed for audio features of track {track_id}: {str(e)}")
+    # Get audio features for the track using the existing batch function
+    audio_features_list = await get_audio_features([track_id], access_token)
+
+    # Extract the features for the single track, if available
+    features = audio_features_list[0] if audio_features_list else None
    
     # Calculate aura based on single track
     analysis_result = calculate_aura([features])

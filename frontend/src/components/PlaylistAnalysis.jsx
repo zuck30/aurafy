@@ -732,7 +732,7 @@ const PlaylistAnalysis = () => {
     };
 
     fetchAnalysis();
-  }, [id, token, logout]);
+  }, [id, token]);
 
   if (loading) {
     return (
