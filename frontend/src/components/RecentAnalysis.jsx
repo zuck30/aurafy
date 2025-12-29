@@ -581,7 +581,7 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   const downloadAsImage = async () => {
-    if (!analysis) return;
+    if (!analysis || !analysis.analysis) return;
 
     const { aura, avg_features: features } = analysis.analysis;
 
@@ -671,7 +671,7 @@ const TrackAnalysisModal = ({ isOpen, onClose, track, analysis }) => {
   };
 
   const renderContent = () => {
-    if (!analysis) {
+    if (!analysis || !analysis.analysis) {
       return (
         <Center h="300px">
           <VStack spacing={4}>
