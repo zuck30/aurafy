@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
-import requests
+import httpx
 import urllib.parse
 from typing import List, Dict, Optional
 import base64
@@ -102,7 +102,6 @@ async def login():
 @app.get("/api/callback")
 async def callback(code: str):
     logger.info("Received callback from Spotify")
-   
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
         "grant_type": "authorization_code",
@@ -110,7 +109,8 @@ async def callback(code: str):
         "redirect_uri": SPOTIFY_REDIRECT_URI
     }
     headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
-    response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
     if response.status_code != 200:
         logger.error(f"Failed to retrieve access token: {response.text}")
         raise HTTPException(status_code=400, detail=f"Failed to retrieve access token: {response.text}")
@@ -128,14 +128,14 @@ async def callback(code: str):
 @app.get("/api/refresh_token")
 async def refresh_token(refresh_token: str):
     logger.info(f"Refreshing token with refresh_token: {refresh_token[:20]}...")
-   
     auth_header = base64.b64encode(f"{SPOTIFY_CLIENT_ID}:{SPOTIFY_CLIENT_SECRET}".encode()).decode()
     token_post_data = {
         "grant_type": "refresh_token",
         "refresh_token": refresh_token,
     }
     headers = {"Authorization": f"Basic {auth_header}", "Content-Type": "application/x-www-form-urlencoded"}
-    response = requests.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
+    async with httpx.AsyncClient() as client:
+        response = await client.post(SPOTIFY_TOKEN_URL, data=token_post_data, headers=headers)
     if response.status_code != 200:
         logger.error(f"Failed to refresh access token: {response.text}")
         raise HTTPException(status_code=400, detail=f"Failed to refresh access token: {response.text}")
@@ -154,37 +154,32 @@ def get_spotify_headers(access_token: str):
 @app.get("/api/me")
 async def get_me(access_token: str):
     logger.info(f"Getting user info with token: {access_token[:20]}...")
-   
     headers = get_spotify_headers(access_token)
-    response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
-   
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
     if response.status_code != 200:
         logger.error(f"Failed to get user info: {response.status_code} - {response.text}")
         raise HTTPException(status_code=response.status_code, detail=response.json())
-   
     logger.info("Successfully retrieved user info")
     return response.json()
 
 @app.get("/api/playlists")
 async def get_playlists(access_token: str):
     logger.info(f"Getting playlists with token: {access_token[:20]}...")
-   
     headers = get_spotify_headers(access_token)
-    response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/playlists", headers=headers)
-   
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{SPOTIFY_API_BASE_URL}/me/playlists", headers=headers)
     if response.status_code != 200:
         logger.error(f"Failed to get playlists: {response.status_code} - {response.text}")
         raise HTTPException(status_code=response.status_code, detail=response.json())
-   
     return response.json()
 
 @app.get("/api/recently-played")
 async def get_recently_played(access_token: str):
     logger.info(f"Getting recently played with token: {access_token[:20]}...")
-   
     headers = get_spotify_headers(access_token)
-    response = requests.get(f"{SPOTIFY_API_BASE_URL}/me/player/recently-played?limit=50", headers=headers)
-   
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{SPOTIFY_API_BASE_URL}/me/player/recently-played?limit=50", headers=headers)
     if response.status_code != 200:
         logger.error(f"Failed to get recently played: {response.status_code} - {response.text}")
         raise HTTPException(
@@ -194,7 +189,6 @@ async def get_recently_played(access_token: str):
                 "message": "Failed to fetch recently played tracks from Spotify"
             }
         )
-   
     data = response.json()
     logger.info(f"Retrieved {len(data.get('items', []))} recently played tracks")
     return data
@@ -202,14 +196,12 @@ async def get_recently_played(access_token: str):
 @app.get("/api/playlist/{playlist_id}")
 async def get_playlist(playlist_id: str, access_token: str):
     logger.info(f"Getting playlist {playlist_id} with token: {access_token[:20]}...")
-   
     headers = get_spotify_headers(access_token)
-    response = requests.get(f"{SPOTIFY_API_BASE_URL}/playlists/{playlist_id}", headers=headers)
-   
+    async with httpx.AsyncClient() as client:
+        response = await client.get(f"{SPOTIFY_API_BASE_URL}/playlists/{playlist_id}", headers=headers)
     if response.status_code != 200:
         logger.error(f"Failed to get playlist: {response.status_code} - {response.text}")
         raise HTTPException(status_code=response.status_code, detail=response.json())
-   
     return response.json()
 
 async def get_track_ids_from_playlist(playlist_id: str, access_token: str):
@@ -224,77 +216,51 @@ async def get_audio_features(track_ids: List[str], access_token: str):
     if not track_ids:
         logger.info("No track IDs provided for audio features")
         return []
-   
     headers = get_spotify_headers(access_token)
     audio_features_list = []
-   
-    # Process in batches of 100 (Spotify API limit)
-    for i in range(0, len(track_ids), 100):
-        batch = track_ids[i:i+100]
-       
-        # Filter out None or empty IDs
-        valid_batch = [tid for tid in batch if tid and isinstance(tid, str) and len(tid) > 10]
-       
-        if not valid_batch:
-            logger.warning(f"Batch {i//100 + 1} has no valid track IDs")
-            continue
-           
-        params = {"ids": ",".join(valid_batch)}
-       
-        logger.info(f"Requesting audio features for batch {i//100 + 1}, {len(valid_batch)} tracks")
-       
-        try:
-            response = requests.get(
-                f"{SPOTIFY_API_BASE_URL}/audio-features",
-                headers=headers,
-                params=params,
-                timeout=30
-            )
-           
-            if response.status_code == 429:
-                # Rate limited - check Retry-After header
-                retry_after = int(response.headers.get('Retry-After', 1))
-                logger.warning(f"Rate limited. Waiting {retry_after} seconds...")
-                time.sleep(retry_after)
-                # Retry the same batch
-                response = requests.get(
+    async with httpx.AsyncClient() as client:
+        for i in range(0, len(track_ids), 100):
+            batch = track_ids[i:i+100]
+            valid_batch = [tid for tid in batch if tid and isinstance(tid, str) and len(tid) > 10]
+            if not valid_batch:
+                logger.warning(f"Batch {i//100 + 1} has no valid track IDs")
+                continue
+            params = {"ids": ",".join(valid_batch)}
+            logger.info(f"Requesting audio features for batch {i//100 + 1}, {len(valid_batch)} tracks")
+            try:
+                response = await client.get(
                     f"{SPOTIFY_API_BASE_URL}/audio-features",
                     headers=headers,
                     params=params,
                     timeout=30
                 )
-           
-            if response.status_code == 403:
-                logger.error(f"403 Forbidden for audio-features. Response: {response.text}")
-                # Return empty list instead of crashing
-                return []
-               
-            if response.status_code != 200:
-                logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
-                # Return what we have so far instead of crashing
-                break
-               
-            batch_features = response.json().get('audio_features', [])
-            audio_features_list.extend(batch_features)
-            logger.info(f"Got {len(batch_features)} audio features from batch {i//100 + 1}")
-           
-            # Small delay to avoid rate limiting
-            time.sleep(0.1)
-           
-        except Exception as e:
-            logger.error(f"Exception getting audio features for batch {i//100 + 1}: {str(e)}")
-            # Continue with next batch instead of failing completely
-   
+                if response.status_code == 429:
+                    retry_after = int(response.headers.get('Retry-After', 1))
+                    logger.warning(f"Rate limited. Waiting {retry_after} seconds...")
+                    time.sleep(retry_after)
+                    response = await client.get(
+                        f"{SPOTIFY_API_BASE_URL}/audio-features",
+                        headers=headers,
+                        params=params,
+                        timeout=30
+                    )
+                if response.status_code == 403:
+                    logger.error(f"403 Forbidden for audio-features. Response: {response.text}")
+                    return []
+                if response.status_code != 200:
+                    logger.error(f"Failed to get audio features: {response.status_code} - {response.text}")
+                    break
+                batch_features = response.json().get('audio_features', [])
+                audio_features_list.extend(batch_features)
+                logger.info(f"Got {len(batch_features)} audio features from batch {i//100 + 1}")
+                time.sleep(0.1)
+            except Exception as e:
+                logger.error(f"Exception getting audio features for batch {i//100 + 1}: {str(e)}")
     logger.info(f"Total audio features retrieved: {len(audio_features_list)}")
     return audio_features_list
 
 def calculate_aura(features_list: List[Dict]):
-    # Filter out None values and tracks without features
     valid_features = [f for f in features_list if f and isinstance(f, dict)]
-   
-    # Explicitly filter out None values from the list of audio features
-    features_list = [f for f in features_list if f]
-
     if not valid_features:
         return {
             "aura": {
@@ -351,11 +317,9 @@ def calculate_aura(features_list: List[Dict]):
 @app.get("/api/analyze/playlist/{playlist_id}")
 async def analyze_playlist(playlist_id: str, access_token: str):
     logger.info(f"Analyzing playlist {playlist_id} with token: {access_token[:20]}...")
-   
-    # Validate token first
     headers = get_spotify_headers(access_token)
-    test_response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
-   
+    async with httpx.AsyncClient() as client:
+        test_response = await client.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
     if test_response.status_code != 200:
         logger.error(f"Token validation failed: {test_response.status_code} - {test_response.text}")
         raise HTTPException(
@@ -368,7 +332,6 @@ async def analyze_playlist(playlist_id: str, access_token: str):
                 }
             }
         )
-   
     track_ids = await get_track_ids_from_playlist(playlist_id, access_token)
    
     if not track_ids:
@@ -426,15 +389,12 @@ async def analyze_recent(access_token: str):
             }
         )
    
-    # Validate token first
     headers = get_spotify_headers(access_token)
-    test_response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
-   
+    async with httpx.AsyncClient() as client:
+        test_response = await client.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
     if test_response.status_code != 200:
         logger.error(f"Token validation failed: {test_response.status_code} - {test_response.text}")
-       
         error_detail = test_response.json() if test_response.text else {"error": "No response from Spotify"}
-       
         raise HTTPException(
             status_code=403,
             detail={
@@ -521,46 +481,35 @@ async def analyze_recent(access_token: str):
 @app.get("/api/analyze/track/{track_id}")
 async def analyze_track(track_id: str, access_token: str):
     logger.info(f"Analyzing single track {track_id} with token: {access_token[:20]}...")
-   
     headers = get_spotify_headers(access_token)
-   
-    # Validate token
-    test_response = requests.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
-    if test_response.status_code != 200:
-        logger.error(f"Token validation failed: {test_response.status_code} - {test_response.text}")
-        raise HTTPException(
-            status_code=403,
-            detail={
-                "error": {
-                    "status": test_response.status_code,
-                    "message": "Invalid or expired access token",
-                    "spotify_error": test_response.json()
+    async with httpx.AsyncClient() as client:
+        test_response = await client.get(f"{SPOTIFY_API_BASE_URL}/me", headers=headers)
+        if test_response.status_code != 200:
+            logger.error(f"Token validation failed: {test_response.status_code} - {test_response.text}")
+            raise HTTPException(
+                status_code=403,
+                detail={
+                    "error": {
+                        "status": test_response.status_code,
+                        "message": "Invalid or expired access token",
+                        "spotify_error": test_response.json()
+                    }
                 }
-            }
-        )
-   
-    # Get audio features for the track using the existing batch function
-    audio_features_list = await get_audio_features([track_id], access_token)
-
-    # Extract the features for the single track, if available
-    features = audio_features_list[0] if audio_features_list else None
-   
-    # Calculate aura based on single track
-    analysis_result = calculate_aura([features])
-   
-    # Get track details, but don't fail if the request doesn't work
-    track_details = None
-    try:
-        track_response = requests.get(f"{SPOTIFY_API_BASE_URL}/tracks/{track_id}", headers=headers, timeout=10)
-        if track_response.status_code == 200 and track_response.text:
-            track_details = track_response.json()
-        else:
-            logger.warning(
-                f"Spotify API returned status {track_response.status_code} for track details of {track_id}"
             )
-    except requests.exceptions.RequestException as e:
-        logger.error(f"Request failed for track details of {track_id}: {str(e)}")
-   
+        audio_features_list = await get_audio_features([track_id], access_token)
+        features = audio_features_list[0] if audio_features_list else None
+        analysis_result = calculate_aura([features])
+        track_details = None
+        try:
+            track_response = await client.get(f"{SPOTIFY_API_BASE_URL}/tracks/{track_id}", headers=headers, timeout=10)
+            if track_response.status_code == 200 and track_response.text:
+                track_details = track_response.json()
+            else:
+                logger.warning(
+                    f"Spotify API returned status {track_response.status_code} for track details of {track_id}"
+                )
+        except httpx.RequestError as e:
+            logger.error(f"Request failed for track details of {track_id}: {str(e)}")
     logger.info(f"Single track analysis complete. Aura: {analysis_result['aura']['name']}")
    
     return {
