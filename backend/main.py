@@ -264,8 +264,9 @@ def calculate_aura(features_list: List[Dict]):
     if not valid_features:
         return {
             "aura": {
-                "name": "Silent Symphony",
-                "description": "We couldn't analyze the audio features of this playlist. The tracks might not be available for analysis.",
+                "name": "The Anxious Hummingbir",
+                "description": "Sheddy you listen to Olivia Dean Too much Bro.",
+                # "description": "We couldn't analyze the audio features of this playlist. The tracks might not be available for analysis.",
                 "color": "#9E9E9E"
             },
             "avg_features": {}
